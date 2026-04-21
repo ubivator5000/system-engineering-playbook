@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Пользователи — описание поведения - system-engineering-playbook</title>
+        <title>CONOPS / OPSCON - system-engineering-playbook</title>
 
 
         <!-- Custom HTML head -->
@@ -176,31 +176,24 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h4 id="21-Пользователи--описание-поведения"><a class="header" href="#21-Пользователи--описание-поведения">2.1. Пользователи — описание поведения</a></h4>
-<p>Пользователь (студент) взаимодействует с системой через процесс оплаты и последующее управление подпиской:</p>
-<div class="table-wrapper"><table><thead><tr><th>Действие</th><th>Описание</th><th>Способ взаимодействия</th></tr></thead><tbody>
-<tr><td>Инициация оплаты</td><td>Выбирает курс на сайте школы, нажимает «Оплатить»</td><td>Виджет PayLect на сайте</td></tr>
-<tr><td>Ввод данных</td><td>Заполняет ФИО, телефон (если не переданы сайтом)</td><td>Форма в виджете</td></tr>
-<tr><td>Совершение платежа</td><td>Вводит данные карты на странице банка</td><td>Редирект на платёжную страницу Т-Банка</td></tr>
-<tr><td>Получение доступа</td><td>После успешной оплаты получает доступ к курсу</td><td>Через менеджера, которому пришло уведомление об оплате и данные покупателя (создалась задача об открытии доступа в CRM, если подключена такая интеграция)</td></tr>
-<tr><td>Реакция на отказ</td><td>При отказе карты получает уведомление о повторной попытке</td><td>ВК / СМС</td></tr>
-<tr><td>Управление подпиской</td><td>Может приостановить, возобновить или отменить подписку</td><td>Личный кабинет PayLect</td></tr>
+                        <h3 id="4-conops--opscon-concept-of-operations--operational-concept"><a class="header" href="#4-conops--opscon-concept-of-operations--operational-concept">4. CONOPS / OPSCON (Concept of Operations / Operational Concept)</a></h3>
+<h4 id="41-Роли-участников"><a class="header" href="#41-Роли-участников">4.1. Роли участников</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Роль</th><th>Определение</th><th>Основные действия в системе</th><th>Привилегии в PayLect</th></tr></thead><tbody>
+<tr><td>Студент</td><td>Конечный пользователь, покупатель курсов</td><td>Инициирует оплату, вводит данные, управляет подпиской, получает уведомления</td><td>Только оплата и управление своей подпиской через виджет</td></tr>
+<tr><td>Владелец / CEO школы</td><td>Руководитель онлайн-школы</td><td>Просмотр дашборда выручки по курсам, анализ оттока и LTV, управление настройками</td><td>Полный доступ к личному кабинету, управление API-ключами</td></tr>
+<tr><td>Менеджер по работе с клиентами</td><td>Сотрудник, отвечающий за коммуникацию со студентами</td><td>Получение уведомлений о новых покупках (ВК), работа с задачами в CRM, связь со студентами при отказах</td><td>Просмотр списка платежей, получение уведомлений</td></tr>
+<tr><td>Финансовый менеджер / Бухгалтер</td><td>Сотрудник, отвечающий за учёт и отчётность</td><td>Скачивание отчётов, запуск внешней обработки для загрузки платежей в 1С, сверка с выпиской банка</td><td>Просмотр и экспорт всех платежей, настройка интеграции с 1С</td></tr>
+<tr><td>Технический администратор школы</td><td>Сотрудник, отвечающий за настройку IT-инфраструктуры</td><td>Установка плагина на WordPress, настройка шаблона в Tilda, установка приложения в Битрикс24, настройка API-ключей</td><td>Доступ к настройкам интеграций, управление API-ключами</td></tr>
 </tbody></table>
 </div>
-<p><strong>Поведенческий профиль:</strong></p>
-<p>Пользователь ожидает мгновенной реакции на оплату и прозрачности списаний. Отсутствие уведомлений или задержка доступа приводят к оттоку.</p>
-
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="context.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="integration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="performers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -208,13 +201,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="context.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="integration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="performers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
