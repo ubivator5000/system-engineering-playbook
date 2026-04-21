@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>CONOPS / OPSCON - system-engineering-playbook</title>
+        <title>Сценарий №1: Оплата разового курса через WordPress - system-engineering-playbook</title>
 
 
         <!-- Custom HTML head -->
@@ -176,27 +176,22 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h3 id="4-conops--opscon-concept-of-operations--operational-concept"><a class="header" href="#4-conops--opscon-concept-of-operations--operational-concept">4. CONOPS / OPSCON (Concept of Operations / Operational Concept)</a></h3>
-<h4 id="41-Роли-участников"><a class="header" href="#41-Роли-участников">4.1. Роли участников</a></h4>
-<div class="table-wrapper"><table><thead><tr><th>Роль</th><th>Определение</th><th>Основные действия в системе</th><th>Привилегии в PayLect</th></tr></thead><tbody>
-<tr><td>Студент</td><td>Конечный пользователь, покупатель курсов</td><td>Инициирует оплату, вводит данные, управляет подпиской, получает уведомления</td><td>Только оплата и управление своей подпиской через виджет</td></tr>
-<tr><td>Владелец / CEO школы</td><td>Руководитель онлайн-школы</td><td>Просмотр дашборда выручки по курсам, анализ оттока и LTV, управление настройками</td><td>Полный доступ к личному кабинету, управление API-ключами</td></tr>
-<tr><td>Менеджер по работе с клиентами</td><td>Сотрудник, отвечающий за коммуникацию со студентами</td><td>Получение уведомлений о новых покупках (ВК), работа с задачами в CRM, связь со студентами при отказах</td><td>Просмотр списка платежей, получение уведомлений</td></tr>
-<tr><td>Финансовый менеджер / Бухгалтер</td><td>Сотрудник, отвечающий за учёт и отчётность</td><td>Скачивание отчётов, запуск внешней обработки для загрузки платежей в 1С, сверка с выпиской банка</td><td>Просмотр и экспорт всех платежей, настройка интеграции с 1С</td></tr>
-<tr><td>Технический администратор школы</td><td>Сотрудник, отвечающий за настройку IT-инфраструктуры</td><td>Установка плагина на WordPress, настройка шаблона в Tilda, установка приложения в Битрикс24, настройка API-ключей</td><td>Доступ к настройкам интеграций, управление API-ключами</td></tr>
-</tbody></table>
-</div>
+                        <h4 id="42-Сценарии-использования"><a class="header" href="#42-Сценарии-использования">4.2. Сценарии использования</a></h4>
+<h5 id="Сценарий-1-Оплата-разового-курса-через-wordpress"><a class="header" href="#Сценарий-1-Оплата-разового-курса-через-wordpress">Сценарий №1: Оплата разового курса через WordPress</a></h5>
+<p><strong>Предусловие:</strong> Школа установила плагин PayLect, ввела API-ключи, на страницу курса добавлен виджет.</p>
+<p><strong>Основной поток:</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/main_flow_1.drawio"></iframe>
+<p><strong>Исключение:</strong></p>
+<p><strong>Режим деградации (Т-Банк недоступен):</strong></p>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="integration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="CONOPS_OPSCON.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="scn1.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -204,13 +199,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="integration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="CONOPS_OPSCON.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="scn1.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
