@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>1. Описание проекта - system-engineering-playbook</title>
+        <title>2.1.	Пользователи — описание поведения - system-engineering-playbook</title>
 
 
         <!-- Custom HTML head -->
@@ -176,27 +176,29 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h3 id="О-продукте-paylect"><a class="header" href="#О-продукте-paylect">О продукте PayLect</a></h3>
-<h4 id="11-Цель-системы-миссия"><a class="header" href="#11-Цель-системы-миссия">1.1. Цель системы (миссия)</a></h4>
-<p>PayLect — это легковесный слой автоматизации платежей для небольших онлайн-школ и авторов курсов. Система за 5 минут интегрируется с самописными сайтами на WordPress или Tilda через виджет или готовый шаблон, а также с CRM (например, Битрикс24) и бухгалтерией (1С). PayLect не просто принимает оплаты (карты, СБП, подписки): он автоматически восстанавливает выручку через умные повторные списания при отказе карты (retry), отправляет студентам напоминания об оплатах, уведомляет менеджеров о покупках в мессенджеры, предоставляет аналитику продаж по каждому курсу и разгружает бухгалтера за счёт прямой выгрузки данных в учётную систему. Таким образом, PayLect объединяет сайт, платёжный шлюз, CRM и 1С в единый управляемый контур — без привлечения программистов, без ручного переноса данных и без потери выручки из-за отказов.</p>
-<h4 id="12-Миссия-системы"><a class="header" href="#12-Миссия-системы">1.2. Миссия системы</a></h4>
-<p>Предоставить небольшим онлайн-школам корпоративный уровень управления платежами — без привлечения программистов, без ручного переноса данных между системами и без потери выручки из-за отказов платежей.</p>
-<h4 id="13-Ключевые-задачи-paylect"><a class="header" href="#13-Ключевые-задачи-paylect">1.3. Ключевые задачи PayLect</a></h4>
-<ul>
-<li>Приём разовых и рекуррентных платежей</li>
-<li>Умные повторные списания для восстановления потерянной выручки</li>
-<li>Автоматические уведомления студентов и менеджеров в мессенджерах</li>
-<li>Детальная аналитика продаж и оттока по каждому курсу</li>
-<li>Прямая выгрузка данных в CRM (Битрикс24) и бухгалтерию (1С)</li>
-<li>Двухуровневая система антифрода (на уровне шлюза и эквайера)</li>
-</ul>
+                        <h4 id="21-Пользователи--описание-поведения"><a class="header" href="#21-Пользователи--описание-поведения">2.1. Пользователи — описание поведения</a></h4>
+<p>Пользователь (студент) взаимодействует с системой через процесс оплаты и последующее управление подпиской:</p>
+<div class="table-wrapper"><table><thead><tr><th>Действие</th><th>Описание</th><th>Способ взаимодействия</th></tr></thead><tbody>
+<tr><td>Инициация оплаты</td><td>Выбирает курс на сайте школы, нажимает «Оплатить»</td><td>Виджет PayLect на сайте</td></tr>
+<tr><td>Ввод данных</td><td>Заполняет ФИО, телефон (если не переданы сайтом)</td><td>Форма в виджете</td></tr>
+<tr><td>Совершение платежа</td><td>Вводит данные карты на странице банка</td><td>Редирект на платёжную страницу Т-Банка</td></tr>
+<tr><td>Получение доступа</td><td>После успешной оплаты получает доступ к курсу</td><td>Через менеджера, которому пришло уведомление об оплате и данные покупателя (создалась задача об открытии доступа в CRM, если подключена такая интеграция)</td></tr>
+<tr><td>Реакция на отказ</td><td>При отказе карты получает уведомление о повторной попытке</td><td>ВК / СМС</td></tr>
+<tr><td>Управление подпиской</td><td>Может приостановить, возобновить или отменить подписку</td><td>Личный кабинет PayLect</td></tr>
+</tbody></table>
+</div>
+<p><strong>Поведенческий профиль:</strong></p>
+<p>Пользователь ожидает мгновенной реакции на оплату и прозрачности списаний. Отсутствие уведомлений или задержка доступа приводят к оттоку.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="context.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
-                            <a rel="next prefetch" href="context.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="performers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -206,8 +208,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="context.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
-                    <a rel="next prefetch" href="context.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="performers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
