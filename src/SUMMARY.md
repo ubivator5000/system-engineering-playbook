@@ -6,4 +6,4 @@
     - [Исполнители — описание поведения](./performers.md)
 - [Интеграции](./integration.md)
 - [CONOPS / OPSCON](./CONOPS_OPSCON.md)
-    - [Сценарий №1: Оплата разового курса через WordPress](./scn1.md)
+    - [Сценарий №1](./scn1.md)
