@@ -6,7 +6,7 @@ PayLect выступает как связующий слой между эти�
 
 #### Контекстная диаграмма
 
-
+@drawio{https://github.com/ubivator5000/system-engineering-playbook/blob/main/src/diagrams/paylect-context.drawio}
 
 *Рисунок 1 — Взаимодействие PayLect с внешними системами и пользователями*
 

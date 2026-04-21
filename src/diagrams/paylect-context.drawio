@@ -1,0 +1,154 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="PayLect Context Diagram (Separated Flows)" id="0">
+    <mxGraphModel dx="2542" dy="1587" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="paylect" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168bd;fontColor=#ffffff;strokeColor=#0b5394;fontSize=14;" value="PayLect&#xa;Система автоматизации платежей" vertex="1">
+          <mxGeometry height="120" width="260" x="420" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="student" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#08427b;fontColor=#ffffff;" value="Студент" vertex="1">
+          <mxGeometry height="80" width="160" x="100" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="manager" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#08427b;fontColor=#ffffff;" value="Менеджер" vertex="1">
+          <mxGeometry height="80" width="160" x="-100" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="ceo" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#08427b;fontColor=#ffffff;" value="Владелец / CEO" vertex="1">
+          <mxGeometry height="80" width="160" x="200" y="-60" as="geometry" />
+        </mxCell>
+        <mxCell id="tech_admin" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#08427b;fontColor=#ffffff;" value="Технический&#xa;администратор" vertex="1">
+          <mxGeometry height="80" width="160" x="-20" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="site" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;" value="Сайт (WordPress / Tilda)" vertex="1">
+          <mxGeometry height="80" width="220" x="560" y="-60" as="geometry" />
+        </mxCell>
+        <mxCell id="bank" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;" value="Банк (Т-Банк)" vertex="1">
+          <mxGeometry height="80" width="220" x="920" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="crm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;" value="CRM (Битрикс24)" vertex="1">
+          <mxGeometry height="80" width="220" x="920" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="accounting" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;" value="1С Бухгалтерия" vertex="1">
+          <mxGeometry height="80" width="220" x="770" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="vk" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;" value="ВК / СМС" vertex="1">
+          <mxGeometry height="80" width="220" x="450" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="s_in" edge="1" parent="1" source="student" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0.174;entryY=0.982;entryPerimeter=0;" target="paylect" value="Инициирует оплату / вводит данные">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="260" y="460" as="sourcePoint" />
+            <mxPoint x="420" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s_out" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0;exitY=0.856;entryX=0.5;entryY=0;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitPerimeter=0;" target="student" value="Уведомления / статус подписки">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="290" as="sourcePoint" />
+            <mxPoint x="260" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m_out" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.015;exitY=0.373;entryX=0.75;entryY=0.034;exitPerimeter=0;entryDx=0;entryDy=0;entryPerimeter=0;exitDx=0;exitDy=0;" target="manager" value="Уведомления о покупках / задачах">
+          <mxGeometry relative="1" x="0.1109" y="3" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="420" y="320" as="sourcePoint" />
+            <mxPoint x="260" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m_in" edge="1" parent="1" source="manager" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=1;exitY=1;entryX=-0.004;entryY=0.623;entryDx=0;entryDy=0;entryPerimeter=0;" target="paylect" value="Реакция на события (работа с CRM)">
+          <mxGeometry relative="1" x="-0.1473" y="-2" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="260" y="300" as="sourcePoint" />
+            <mxPoint x="420" y="362" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_out" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.049;exitY=0.007;entryX=0.633;entryY=1.002;entryPerimeter=0;exitPerimeter=0;" target="ceo" value="Аналитика продаж / LTV / отток">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="350" as="sourcePoint" />
+            <mxPoint x="260" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_in" edge="1" parent="1" source="ceo" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0.342;entryY=0.018;entryPerimeter=0;" target="paylect" value="Просмотр дашбордов / настройка">
+          <mxGeometry relative="1" x="-0.2561" y="-2" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="260" y="140" as="sourcePoint" />
+            <mxPoint x="420" y="278" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ta_in" edge="1" parent="1" source="tech_admin" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=1;exitY=1;entryX=0;entryY=0.25;exitDx=0;exitDy=0;entryDx=0;entryDy=0;" target="paylect" value="Регистрация школы, настройка API-ключей">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="250" />
+            </Array>
+            <mxPoint x="190" y="110" as="sourcePoint" />
+            <mxPoint x="420" y="303" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ta_out" edge="1" parent="1" style="endArrow=classic;html=1;strokeWidth=1.5;entryX=1;entryY=0.25;" target="tech_admin" value="Статус настройки интеграций, логи">
+          <mxGeometry relative="1" x="0.2047" y="-12" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="420" y="270" as="sourcePoint" />
+            <mxPoint x="190" y="90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="site_in" edge="1" parent="1" source="site" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.75;exitY=1;entryX=0.923;entryY=0;entryPerimeter=0;" target="paylect" value="Данные заказа (курс, сумма, студент)">
+          <mxGeometry relative="1" x="-0.0393" y="15" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="740" y="140" as="sourcePoint" />
+            <mxPoint x="680" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="site_out" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.592;exitY=-0.025;entryX=0.335;entryY=0.977;entryPerimeter=0;exitPerimeter=0;" target="site" value="Ссылка на оплату / статус платежа">
+          <mxGeometry relative="1" x="0.2948" y="3" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="680" y="320" as="sourcePoint" />
+            <mxPoint x="740" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bank_in" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.989;exitY=0.115;entryX=0.027;entryY=0.102;exitPerimeter=0;entryPerimeter=0;" target="bank" value="Запрос списания / рекуррентные платежи">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="320" as="sourcePoint" />
+            <mxPoint x="740" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bank_out" edge="1" parent="1" source="bank" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0;exitY=0.75;entryX=1.011;entryY=0.375;entryPerimeter=0;" target="paylect" value="Статус транзакции / токен карты">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="280" as="sourcePoint" />
+            <mxPoint x="680" y="362" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="crm_in" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=1.014;exitY=0.568;entryX=0.02;entryY=0.107;exitPerimeter=0;entryPerimeter=0;" target="crm" value="Создание сделок / задач / контактов">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="320" as="sourcePoint" />
+            <mxPoint x="740" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="crm_out" edge="1" parent="1" source="crm" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0;exitY=0.75;entryX=1.002;entryY=0.902;entryPerimeter=0;" target="paylect" value="Подтверждение выполнения">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="400" as="sourcePoint" />
+            <mxPoint x="680" y="278" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acc_in" edge="1" parent="1" source="accounting" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0;exitY=0.5;entryX=0.66;entryY=0.975;entryPerimeter=0;" target="paylect" value="Запрос выгрузки платежей">
+          <mxGeometry relative="1" x="-0.1668" y="-2" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="740" y="500" as="sourcePoint" />
+            <mxPoint x="680" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acc_out" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.909;exitY=1.008;entryX=0.317;entryY=0.04;exitPerimeter=0;entryPerimeter=0;" target="accounting" value="Экспорт платежей">
+          <mxGeometry relative="1" x="-0.0002" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="680" y="320" as="sourcePoint" />
+            <mxPoint x="740" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vk_out" edge="1" parent="1" source="paylect" style="endArrow=classic;html=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.56;entryY=0.029;entryPerimeter=0;" target="vk" value="Запрос на уведомления студентам и менеджерам">
+          <mxGeometry relative="1" x="0.5266" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="680" y="320" as="sourcePoint" />
+            <mxPoint x="530" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
