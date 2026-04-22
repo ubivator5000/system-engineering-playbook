@@ -11,3 +11,4 @@
     - [Сценарий №3](./scn3.md)
     - [Сценарий №4](./scn4.md)
     - [Сценарий №5](./scn5.md)
+- [Stakeholder requirements](./Stakeholder_requirements.md)
