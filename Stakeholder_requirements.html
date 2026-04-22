@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Сценарий №5 - system-engineering-playbook</title>
+        <title>Stakeholder requirements - system-engineering-playbook</title>
 
 
         <!-- Custom HTML head -->
@@ -176,22 +176,45 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h4 id="Сценарии-использования"><a class="header" href="#Сценарии-использования">Сценарии использования</a></h4>
-<h5 id="Сценарий-5-Сбор-и-анализ-аналитики-по-курсам-в-личном-кабинете-paylect"><a class="header" href="#Сценарий-5-Сбор-и-анализ-аналитики-по-курсам-в-личном-кабинете-paylect">Сценарий №5: Сбор и анализ аналитики по курсам в личном кабинете PayLect</a></h5>
-<p><strong>Предусловие:</strong> PayLect работает 6 месяцев. Накоплены данные по 5 курсам школы.</p>
-<p><strong>Основной поток:</strong></p>
-<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/main_flow_5.drawio"></iframe>
+                        <h4 id="5-stakeholder-requirements"><a class="header" href="#5-stakeholder-requirements">5.	Stakeholder requirements</a></h4>
+<h3 id="sr-01-Уведомление-менеджера-о-новой-покупке"><a class="header" href="#sr-01-Уведомление-менеджера-о-новой-покупке">SR-01: Уведомление менеджера о новой покупке</a></h3>
+<p>Менеджер по работе с клиентами должен мгновенно получать уведомление в мессенджер (ВК/Telegram) после успешной оплаты студентом, чтобы оперативно открыть доступ к курсу.</p>
+<hr />
+<h3 id="sr-02-Все-данные-о-студенте-в-уведомлении"><a class="header" href="#sr-02-Все-данные-о-студенте-в-уведомлении">SR-02: Все данные о студенте в уведомлении</a></h3>
+<p>В уведомлении менеджеру должны быть указаны: ФИО студента, телефон, название оплаченного курса и сумма, чтобы открыть доступ без дополнительных запросов к студенту или поиска данных в других системах.</p>
+<hr />
+<h3 id="sr-03-Автоматическое-восстановление-утерянной-выручки"><a class="header" href="#sr-03-Автоматическое-восстановление-утерянной-выручки">SR-03: Автоматическое восстановление утерянной выручки</a></h3>
+<p>Владелец школы должен иметь возможность автоматически повторять списание средств при отказе карты студента (retry-механизм), чтобы минимизировать потерю выручки из-за временных проблем с картой.</p>
+<hr />
+<h3 id="sr-04-Напоминания-о-предстоящих-списаниях"><a class="header" href="#sr-04-Напоминания-о-предстоящих-списаниях">SR-04: Напоминания о предстоящих списаниях</a></h3>
+<p>Студент должен получить напоминание о предстоящем списании за 2–3 дня до даты автоплатежа, чтобы избежать неожиданного списания при недостатке средств или успеть отменить подписку.</p>
+<hr />
+<h3 id="sr-05-Интеграция-с-crm-без-ручного-ввода-данных"><a class="header" href="#sr-05-Интеграция-с-crm-без-ручного-ввода-данных">SR-05: Интеграция с CRM без ручного ввода данных</a></h3>
+<p>Менеджер не должен вручную переносить данные о покупках в CRM (Битрикс24) — после каждого успешного платежа в CRM автоматически создаётся сделка с ФИО, телефоном и названием курса, а также задача менеджеру на открытие доступа.</p>
+<hr />
+<h3 id="sr-06-Автоматическая-выгрузка-в-бухгалтерию"><a class="header" href="#sr-06-Автоматическая-выгрузка-в-бухгалтерию">SR-06: Автоматическая выгрузка в бухгалтерию</a></h3>
+<p>Бухгалтер должен иметь возможность одной кнопкой выгрузить все подтверждённые платежи за период в 1С:Бухгалтерию, чтобы не вбивать каждую операцию вручную и исключить ошибки при сверке с выпиской банка.</p>
+<hr />
+<h3 id="sr-07-Уведомление-менеджера-о-проблемных-платежах"><a class="header" href="#sr-07-Уведомление-менеджера-о-проблемных-платежах">SR-07: Уведомление менеджера о проблемных платежах</a></h3>
+<p>Менеджер должен получать уведомление в мессенджер после третьего неуспешного списания у студента, чтобы связаться с ним и предложить альтернативный способ оплаты (иначе студент уйдёт без доступа).</p>
+<hr />
+<h3 id="sr-08-Лёгкое-подключение-без-программистов"><a class="header" href="#sr-08-Лёгкое-подключение-без-программистов">SR-08: Лёгкое подключение без программистов</a></h3>
+<p>Технический администратор школы (без навыков программирования) должен иметь возможность установить и настроить PayLect на WordPress или Tilda менее чем за 10 минут, используя готовый плагин или шаблон, без написания кода.</p>
+<hr />
+<h3 id="sr-09-Аналитика-выручки-и-оттока-по-каждому-курсу"><a class="header" href="#sr-09-Аналитика-выручки-и-оттока-по-каждому-курсу">SR-09: Аналитика выручки и оттока по каждому курсу</a></h3>
+<p>Владелец школы должен видеть в личном кабинете дашборд с выручкой, количеством оплат, LTV и долей студентов, прекративших оплату (отток), отдельно по каждому курсу, чтобы понимать, какие продукты приносят деньги, а какие теряют аудиторию.</p>
+<hr />
+<h3 id="sr-10-Отсутствие-данных-карты-в-системе-paylect"><a class="header" href="#sr-10-Отсутствие-данных-карты-в-системе-paylect">SR-10: Отсутствие данных карты в системе PayLect</a></h3>
+<p>Студент должен быть уверен, что его данные банковской карты никогда не попадают в PayLect — все платёжные данные вводятся только на защищённой странице банка-эквайера.</p>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="scn4.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="scn5.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="Stakeholder_requirements.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -199,13 +222,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="scn4.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="scn5.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="Stakeholder_requirements.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
