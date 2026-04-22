@@ -1,4 +1,4 @@
-#### 4.2. Сценарии использования
+#### Сценарии использования
 
 ##### Сценарий №1: Оплата разового курса через WordPress
 
@@ -10,7 +10,8 @@
 
 **Исключение:**
 
-
+@drawio{https://github.com/ubivator5000/system-engineering-playbook/blob/main/src/diagrams/exeption_1.drawio}
 
 **Режим деградации (Т-Банк недоступен):**
 
+@drawio{https://github.com/ubivator5000/system-engineering-playbook/blob/main/src/diagrams/degradation_mode_1.drawio}
