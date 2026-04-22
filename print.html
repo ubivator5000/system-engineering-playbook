@@ -291,7 +291,29 @@
 <p><strong>Исключение:</strong></p>
 <iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/exeption_1.drawio"></iframe>
 <p><strong>Режим деградации (Т-Банк недоступен):</strong></p>
-<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/degradation_mode_1.drawio"></iframe>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/degradation_mode_1.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h4 id="Сценарии-использования-1"><a class="header" href="#Сценарии-использования-1">Сценарии использования</a></h4>
+<h5 id="Сценарий-2-Подписка-с-автоматическим-ежемесячным-списанием"><a class="header" href="#Сценарий-2-Подписка-с-автоматическим-ежемесячным-списанием">Сценарий №2: Подписка с автоматическим ежемесячным списанием</a></h5>
+<p><strong>Предусловие:</strong> Школа настроила подписку на курс. Студент оплатил первый месяц.</p>
+<p><strong>Основной поток:</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/main_flow_2.drawio"></iframe>
+<p><strong>Исключение:</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/exeption_2.drawio"></iframe>
+<p><strong>Режим деградации (Т-Банк недоступен при рекуррентном платеже)</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/degradation_mode_2.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h4 id="Сценарии-использования-2"><a class="header" href="#Сценарии-использования-2">Сценарии использования</a></h4>
+<h5 id="Сценарий-3-Полный-цикл-с-интеграцией-в-Битрикс24"><a class="header" href="#Сценарий-3-Полный-цикл-с-интеграцией-в-Битрикс24">Сценарий №3: Полный цикл с интеграцией в Битрикс24</a></h5>
+<p><strong>Предусловие:</strong> Школа установила приложение PayLect в Битрикс24.</p>
+<p><strong>Основной поток:</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/main_flow_3.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h4 id="Сценарии-использования-3"><a class="header" href="#Сценарии-использования-3">Сценарии использования</a></h4>
+<h5 id="Сценарий-4-Выгрузка-платежей-в-1С-через-внешнюю-обработку"><a class="header" href="#Сценарий-4-Выгрузка-платежей-в-1С-через-внешнюю-обработку">Сценарий №4: Выгрузка платежей в 1С через внешнюю обработку</a></h5>
+<p><strong>Предусловие:</strong> Школа скачала внешнюю обработку PayLect.epf из личного кабинета и настроила её в 1С.</p>
+<p><strong>Основной поток:</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/main_flow_4.drawio"></iframe>
+<p><strong>Режим деградации (PayLect API недоступен для обработки)</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/degradation_mode_4.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h4 id="Сценарии-использования-4"><a class="header" href="#Сценарии-использования-4">Сценарии использования</a></h4>
+<h5 id="Сценарий-5-Сбор-и-анализ-аналитики-по-курсам-в-личном-кабинете-paylect"><a class="header" href="#Сценарий-5-Сбор-и-анализ-аналитики-по-курсам-в-личном-кабинете-paylect">Сценарий №5: Сбор и анализ аналитики по курсам в личном кабинете PayLect</a></h5>
+<p><strong>Предусловие:</strong> PayLect работает 6 месяцев. Накоплены данные по 5 курсам школы.</p>
+<p><strong>Основной поток:</strong></p>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/main_flow_5.drawio"></iframe>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
