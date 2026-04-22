@@ -13,3 +13,4 @@
     - [Сценарий №5](./scn5.md)
 - [Stakeholder requirements](./Stakeholder_requirements.md)
 - [System Requirements](./System_Requirements.md)
+- [NFR](./NFR.md)
