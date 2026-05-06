@@ -1,0 +1,407 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>V&amp;V - system-engineering-playbook</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="src/_assets/custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">system-engineering-playbook</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="11-verification--validation-vv"><a class="header" href="#11-verification--validation-vv">11. Verification &amp; Validation (V&amp;V)</a></h1>
+<h2 id="Матрица-трассируемости-requirement--метод-проверки--артефакткейс"><a class="header" href="#Матрица-трассируемости-requirement--метод-проверки--артефакткейс">Матрица трассируемости: requirement → метод проверки → артефакт/кейс</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>ID требования</th><th>Описание требования</th><th>Метод проверки</th><th>Артефакт / тест-кейс</th></tr></thead><tbody>
+<tr><td><strong>SR-01</strong></td><td>Уведомление менеджера о новой покупке в мессенджер</td><td>Инспекция + Демо</td><td>ТК-01. Уведомление менеджера о покупке</td></tr>
+<tr><td><strong>SR-02</strong></td><td>В уведомлении менеджеру: ФИО, телефон, курс, сумма</td><td>Инспекция</td><td>ТК-01 (проверка содержимого)</td></tr>
+<tr><td><strong>SR-03</strong></td><td>Retry-механизм при отказе карты</td><td>Тестирование</td><td>ТК-02. Автоматический retry при отказе</td></tr>
+<tr><td><strong>SR-04</strong></td><td>Напоминание студенту за 2-3 дня до списания</td><td>Тестирование</td><td>ТК-03. Напоминание о предстоящем списании</td></tr>
+<tr><td><strong>SR-05</strong></td><td>Интеграция с Битрикс24 (автосоздание сделки)</td><td>Тестирование</td><td>ТК-04. Создание сделки в Битрикс24</td></tr>
+<tr><td><strong>SR-06</strong></td><td>Выгрузка платежей в 1С одной кнопкой</td><td>Демо</td><td>ТК-05. Выгрузка платежей в 1С</td></tr>
+<tr><td><strong>SR-07</strong></td><td>Уведомление менеджера после 3 отказов</td><td>Тестирование</td><td>ТК-06. Уведомление о проблемном платеже</td></tr>
+<tr><td><strong>SR-08</strong></td><td>Подключение без программистов менее чем за 10 мин</td><td>Анализ + Инспекция</td><td>Документация: гайд по установке плагина/шаблона</td></tr>
+<tr><td><strong>SR-09</strong></td><td>Дашборд с аналитикой по курсам</td><td>Демо</td><td>ТК-07. Отображение дашборда и метрик</td></tr>
+<tr><td><strong>SR-10</strong></td><td>Данные карты не попадают в PayLect</td><td>Анализ + Инспекция</td><td>Архитектурное решение ADR-004 (редирект на страницу банка)</td></tr>
+<tr><td><strong>SYS-01</strong></td><td>Idempotency-Key: возврат 409 при повторе</td><td>Тестирование</td><td>ТК-08. Идемпотентность платежа</td></tr>
+<tr><td><strong>SYS-10</strong></td><td>Retry интервалы: 1ч, 24ч, 72ч</td><td>Тестирование</td><td>ТК-02 (часть теста)</td></tr>
+<tr><td><strong>SYS-15</strong></td><td>Уведомление менеджеру за &lt;10 секунд</td><td>Тестирование (нагрузочное)</td><td>ТК-09. Задержка уведомления</td></tr>
+<tr><td><strong>SYS-19</strong></td><td>PayLect не хранит PAN/CVV</td><td>Инспекция кода + Аудит</td><td>Проверка моделей БД, логов</td></tr>
+<tr><td><strong>SYS-21</strong></td><td>HMAC-SHA256 подпись запросов</td><td>Тестирование</td><td>ТК-10. Аутентификация по HMAC</td></tr>
+<tr><td><strong>SYS-23</strong></td><td>Rate limiting: 5 RPM с одного IP</td><td>Тестирование</td><td>ТК-11. Rate limiting</td></tr>
+<tr><td><strong>SYS-25</strong></td><td>Экспорт отчёта в CSV/JSON</td><td>Демо</td><td>ТК-12. Экспорт отчёта</td></tr>
+<tr><td><strong>NFR-01</strong></td><td>Шифрование TLS 1.2+, HSTS</td><td>Анализ + Инструментально</td><td>Проверка SSL-сертификата, заголовков</td></tr>
+<tr><td><strong>NFR-02</strong></td><td>Idempotency-Key срок хранения 30 дней</td><td>Тестирование</td><td>ТК-08 (часть теста)</td></tr>
+<tr><td><strong>NFR-05</strong></td><td>Время ответа API ≤500 мс</td><td>Тестирование (нагрузочное)</td><td>ТК-09 (часть теста)</td></tr>
+<tr><td><strong>NFR-06</strong></td><td>Health checks (/health, /ready)</td><td>Инспекция + Тестирование</td><td>Проверка эндпоинтов мониторинга</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Тест-кейсы"><a class="header" href="#Тест-кейсы">Тест-кейсы</a></h2>
+<h3 id="ТК-01-Уведомление-менеджера-о-новой-покупке"><a class="header" href="#ТК-01-Уведомление-менеджера-о-новой-покупке">ТК-01. Уведомление менеджера о новой покупке</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-001</td></tr>
+<tr><td><strong>Название</strong></td><td>Уведомление менеджера в ВК после успешной оплаты</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-01, SR-02, SYS-15, SYS-16</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Школа зарегистрирована в PayLect<br>2. В личном кабинете указан номер телефона менеджера в ВК<br>3. WordPress-виджет настроен и вставлен на страницу курса</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Студент открывает страницу курса<br>2. Нажимает «Оплатить»<br>3. Вводит ФИО и телефон<br>4. Вводит данные карты на странице Т-Банка<br>5. Подтверждает платёж</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Платёж успешно проведён<br>2. Студент получил подтверждение<br>3. Менеджер получил сообщение в ВК &lt; 10 секунд<br>4. В сообщении указаны: ФИО студента, телефон, название курса, сумма</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В личном кабинете PayLect появилась запись о платеже со статусом <code>succeeded</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый WordPress, тестовый аккаунт Т-Банка</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-02-Автоматический-retry-при-отказе-карты"><a class="header" href="#ТК-02-Автоматический-retry-при-отказе-карты">ТК-02. Автоматический retry при отказе карты</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-002</td></tr>
+<tr><td><strong>Название</strong></td><td>Retry-механизм при временном отказе карты</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-03, SYS-10, SYS-11, SYS-13</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Оформлена подписка на курс<br>2. У студента есть карта с лимитом, которого хватает только на 2-ю попытку<br>3. В настройках школы установлено 3 retry-попытки</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Наступает дата планового списания<br>2. Система пытается списать → отказ (недостаточно средств)<br>3. Ожидание 1 час → вторая попытка → отказ<br>4. Ожидание 24 часа → третья попытка → успех</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. После первого отказа система не отправляет уведомление менеджеру<br>2. После успешной попытки списание зафиксировано<br>3. Дальнейшие retry-попытки не выполняются</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В логах аудита зафиксированы все 3 попытки с status: <code>failed</code> → <code>failed</code> → <code>succeeded</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая среда PayLect с симулятором Т-Банка</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-03-Напоминание-студенту-о-предстоящем-списании"><a class="header" href="#ТК-03-Напоминание-студенту-о-предстоящем-списании">ТК-03. Напоминание студенту о предстоящем списании</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-003</td></tr>
+<tr><td><strong>Название</strong></td><td>Отправка напоминания за 3 дня до автоплатежа</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-04, SYS-17</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. У студента активна подписка с ежемесячным списанием 15-го числа<br>2. В профиле студента указан телефон для СМС</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Наступает 12-е число (за 3 дня до списания)<br>2. Retry Scheduler запускает задачу на отправку напоминания<br>3. Notification Dispatcher отправляет СМС</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Студент получил СМС с текстом: «Напоминаем, что 15-го числа с вашей карты будет списано X руб. за курс "Python для начинающих"»<br>2. В логах зафиксирована отправка</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>—</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая среда с моком СМС-провайдера</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-04-Создание-сделки-в-Битрикс24-после-оплаты"><a class="header" href="#ТК-04-Создание-сделки-в-Битрикс24-после-оплаты">ТК-04. Создание сделки в Битрикс24 после оплаты</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-004</td></tr>
+<tr><td><strong>Название</strong></td><td>Автоматическое создание сделки и задачи в Битрикс24</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-05, SYS-07</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Приложение PayLect установлено в Битрикс24<br>2. В личном кабинете PayLect настроена интеграция с Битрикс24</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Студент оплачивает курс через виджет на WordPress<br>2. PayLect получает вебхук от Т-Банка об успехе<br>3. PayLect отправляет вебхук в Битрикс24</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. В Битрикс24 создана новая сделка<br>2. В сделке указаны: ФИО студента, телефон, сумма, название курса<br>3. Создана задача менеджеру: «Открыть доступ к курсу [название] для студента [ФИО]»</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В личном кабинете PayLect в журнале вебхуков статус = <code>delivered</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый Битрикс24, тестовый аккаунт PayLect</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-05-Выгрузка-платежей-в-1С"><a class="header" href="#ТК-05-Выгрузка-платежей-в-1С">ТК-05. Выгрузка платежей в 1С</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-005</td></tr>
+<tr><td><strong>Название</strong></td><td>Экспорт платежей из PayLect во внешнюю обработку 1С</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-06, SYS-08, SYS-09</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. В 1С:Бухгалтерия установлена внешняя обработка PayLect.epf<br>2. В обработку введён валидный API-ключ<br>3. За период с 01.04.2026 по 30.04.2026 есть 3 успешных платежа</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Бухгалтер открывает обработку в 1С<br>2. Выбирает период: 01.04.2026 – 30.04.2026<br>3. Нажимает «Выгрузить платежи»</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Обработка отправляет GET /api/v1/payments?from=2026-04-01&amp;to=2026-04-30<br>2. Получен ответ с 3 платежами<br>3. В 1С созданы 3 документа «Поступление на расчётный счет»<br>4. Документы проведены без ошибок</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>При повторной выгрузке за тот же период дубли не создаются</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая 1С:Бухгалтерия 8.3, тестовый API-ключ</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-06-Уведомление-менеджера-после-3-отказов"><a class="header" href="#ТК-06-Уведомление-менеджера-после-3-отказов">ТК-06. Уведомление менеджера после 3 отказов</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-006</td></tr>
+<tr><td><strong>Название</strong></td><td>Отправка уведомления менеджеру после трёх неуспешных списаний</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-07, SYS-12</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. У студента активна подписка<br>2. На карте студента недостаточно средств<br>3. В настройках школы: 3 retry-попытки</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Попытка №1 (списание в плановую дату) → отказ<br>2. Попытка №2 (через 1 час) → отказ<br>3. Попытка №3 (через 24 часа) → отказ<br>4. Попытка №4 (через 72 часа) → отказ</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Уведомление менеджеру не отправлялось после первых 3 отказов<br>2. После 4-го отказа (3-я retry попытка) менеджер получил сообщение в ВК: «У студента [ФИО] 3 отказа по подписке на курс [название]. Свяжитесь со студентом для смены способа оплаты»</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>Подписка студента переведена в статус <code>payment_failed</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая среда PayLect, мок Т-Банка, возвращающий ошибку <code>insufficient_funds</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-07-Отображение-дашборда-с-аналитикой-по-курсам"><a class="header" href="#ТК-07-Отображение-дашборда-с-аналитикой-по-курсам">ТК-07. Отображение дашборда с аналитикой по курсам</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-007</td></tr>
+<tr><td><strong>Название</strong></td><td>Просмотр аналитики в личном кабинете PayLect</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-09, SYS-24</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. PayLect работает 3 месяца<br>2. Есть данные по 3 курсам школы<br>3. Владелец школы авторизован в личном кабинете</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Владелец открывает личный кабинет PayLect<br>2. Переходит на вкладку «Аналитика»<br>3. Выбирает курс «Python для начинающих»<br>4. Выбирает период «Последние 30 дней»</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>На дашборде отображаются метрики:<br>- Общая выручка за период<br>- Количество оплат<br>- LTV (средний чек × количество платежей на студента)<br>- Отток (доля студентов, прекративших оплату)<br>Все метрики загружаются &lt; 3 секунд</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>При переключении на другой курс метрики пересчитываются корректно</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая БД с синтетическими данными за 3 месяца</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-08-Идемпотентность-платежа"><a class="header" href="#ТК-08-Идемпотентность-платежа">ТК-08. Идемпотентность платежа</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-008</td></tr>
+<tr><td><strong>Название</strong></td><td>Повторный запрос с одинаковым Idempotency-Key не создаёт дубль</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-01, SYS-02, NFR-02</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. PayLect API доступен<br>2. Сгенерирован уникальный Idempotency-Key = <code>uuid-123</code></td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Отправить POST /api/v1/payment с Idempotency-Key: uuid-123 → успех, payment_id = P1<br>2. Тут же отправить второй такой же запрос с Idempotency-Key: uuid-123</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Второй запрос вернул HTTP 409 Conflict<br>2. Тело ответа содержит payment_id = P1 (тот же, что в первом запросе)<br>3. В БД создан только один платёж (нет дубля)</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>Через 31 день ключ удаляется, новый запрос с тем же ключом создаст платёж</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый API PayLect</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-09-Задержка-уведомления-менеджера-производительность"><a class="header" href="#ТК-09-Задержка-уведомления-менеджера-производительность">ТК-09. Задержка уведомления менеджера (производительность)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-009</td></tr>
+<tr><td><strong>Название</strong></td><td>Время отправки уведомления менеджеру не превышает 10 секунд</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-15, NFR-05</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Система под нагрузкой 50 RPS<br>2. Мониторинг времени ответа включён</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Студент инициирует оплату (засечь время T0)<br>2. Провести успешный платёж<br>3. Засечь время получения уведомления менеджером T1</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>T1 - T0 ≤ 10 секунд для 95% платежей</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В логах зафиксирована метрика <code>notification_delivery_ms</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Нагрузочный стенд с k6 или JMeter</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-10-Аутентификация-по-hmac-sha256"><a class="header" href="#ТК-10-Аутентификация-по-hmac-sha256">ТК-10. Аутентификация по HMAC-SHA256</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-010</td></tr>
+<tr><td><strong>Название</strong></td><td>API Gateway отклоняет запросы с неверной подписью</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-21, SYS-22</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Школа зарегистрирована, получены Public Key и Secret Key<br>2. На сервере школы время синхронизировано с NTP</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Сформировать запрос с корректной подписью → ожидаем 200<br>2. Сформировать запрос с произвольной подписью → ожидаем 401<br>3. Сформировать запрос с подписью от другой школы → ожидаем 401<br>4. Сформировать запрос с timestamp = текущее время - 6 минут → ожидаем 401</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>Только правильно подписанные запросы с актуальным timestamp проходят аутентификацию</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В логах аудита зафиксированы все отклонённые запросы с причиной</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый API, скрипт на Python для генерации подписей</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-11-rate-limiting-ограничение-частоты-запросов"><a class="header" href="#ТК-11-rate-limiting-ограничение-частоты-запросов">ТК-11. Rate limiting (ограничение частоты запросов)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-011</td></tr>
+<tr><td><strong>Название</strong></td><td>Превышение лимита 5 запросов в минуту блокирует IP</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-23</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. API Gateway доступен<br>2. Тестовый IP-адрес 192.168.1.100</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Отправить 5 запросов POST /api/v1/payment с IP 192.168.1.100 за 50 секунд → все успешны (200)<br>2. Отправить 6-й запрос с того же IP</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>6-й запрос вернул HTTP 429 Too Many Requests<br>Тело ответа: <code>{"error": "rate limit exceeded", "retry_after": 60, "code": 429}</code></td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>Через 60 секунд запрос с того же IP снова принимается</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый API, нагрузочный скрипт</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-12-Экспорт-отчёта-в-csvjson"><a class="header" href="#ТК-12-Экспорт-отчёта-в-csvjson">ТК-12. Экспорт отчёта в CSV/JSON</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-012</td></tr>
+<tr><td><strong>Название</strong></td><td>Экспорт отчёта по платежам из личного кабинета</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-25</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Владелец школы авторизован в личном кабинете<br>2. За период 01.04.2026 – 30.04.2026 есть платежи</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Перейти в раздел «Отчёты»<br>2. Выбрать период: 01.04.2026 – 30.04.2026<br>3. Выбрать формат: CSV<br>4. Нажать «Экспорт»<br>5. Повторить шаги 2–4 для формата JSON</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Файл CSV скачан, открывается в Excel, содержит заголовки и все платежи за период<br>2. Файл JSON скачан, содержит валидный JSON-массив с теми же данными<br>3. Время экспорта ≤ 5 секунд</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>—</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Браузер, личный кабинет PayLect</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="risks.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="risks.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

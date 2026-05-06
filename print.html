@@ -618,9 +618,103 @@
 </tbody></table>
 </div>
 <hr />
-<h3 id="82-Схема-контейнеров"><a class="header" href="#82-Схема-контейнеров">8.2. Схема контейнеров</a></h3>
-<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/C2.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h1 id="adr"><a class="header" href="#adr">ADR</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h2 id="10-Интерфейсы"><a class="header" href="#10-Интерфейсы">10. Интерфейсы</a></h2>
+<h3 id="Схема-контейнеров"><a class="header" href="#Схема-контейнеров">Схема контейнеров</a></h3>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/C2.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h3 id="82-adr"><a class="header" href="#82-adr">8.2. ADR</a></h3>
+<h1 id="adr-001-Использование-событийно-ориентированной-архитектуры-event-driven-с-очередью-сообщений"><a class="header" href="#adr-001-Использование-событийно-ориентированной-архитектуры-event-driven-с-очередью-сообщений">ADR-001: Использование событийно-ориентированной архитектуры (Event-Driven) с очередью сообщений</a></h1>
+<h2 id="Статус"><a class="header" href="#Статус">Статус</a></h2>
+<p><strong>Принято</strong></p>
+<h2 id="Контекст"><a class="header" href="#Контекст">Контекст</a></h2>
+<p>PayLect должен обрабатывать платежи, уведомления, вебхуки и аналитику. При пиковых нагрузках (запуск курса, акция) прямые синхронные вызовы могут привести к таймаутам, потере данных и недоступности API. Также требуется гарантированная доставка вебхуков при временной недоступности внешних систем (сайт школы, CRM, 1С).</p>
+<h2 id="Решение"><a class="header" href="#Решение">Решение</a></h2>
+<p>Использовать <strong>событийно-ориентированную архитектуру</strong> с <strong>RabbitMQ</strong> в качестве основной очереди сообщений. Все критически важные операции (создание платежа, обновление статуса, отправка уведомлений, вебхуки) проходят через очередь. Поток:</p>
+<ol>
+<li>API Gateway принимает запрос, проверяет идемпотентность и публикует событие <code>payment.created</code>.</li>
+<li>Payment Core (воркер) забирает событие, вызывает Т-Банк, публикует <code>payment.succeeded</code> / <code>payment.failed</code>.</li>
+<li>Notification Dispatcher и другие потребители реагируют на события.</li>
+</ol>
+<h2 id="Последствия-trade-offs"><a class="header" href="#Последствия-trade-offs">Последствия (Trade-offs)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>✅ Плюсы</th><th>❌ Минусы</th></tr></thead><tbody>
+<tr><td>Асинхронность → развязка сервисов, отказоустойчивость</td><td>Усложнение отладки (трассировка через очередь)</td></tr>
+<tr><td>Гарантированная доставка (persistent queues, retries)</td><td>Дополнительная инфраструктура (RabbitMQ/Kafka)</td></tr>
+<tr><td>Автомасштабирование воркеров по длине очереди</td><td>Возможна задержка обработки (milliseconds → seconds)</td></tr>
+<tr><td>Нет потери данных при падении потребителей</td><td>Лишний overhead для простых операций (например, health check)</td></tr>
+</tbody></table>
+</div>
+<h2 id="Альтернативы"><a class="header" href="#Альтернативы">Альтернативы</a></h2>
+<ul>
+<li><strong>Синхронная архитектура (REST только)</strong> — проще, но не гарантирует доставку вебхуков, падает при всплесках.</li>
+<li><strong>Kafka вместо RabbitMQ</strong> — больше пропускная способность, но сложнее в эксплуатации. Для текущих 100 RPS RabbitMQ достаточно.</li>
+</ul>
+<h2 id="Решение-оставлено-в-силе-потому-что"><a class="header" href="#Решение-оставлено-в-силе-потому-что">Решение оставлено в силе, потому что:</a></h2>
+<p>Надёжность доставки вебхуков и восстановление после сбоев важнее небольшого усложнения инфраструктуры.</p>
+<hr />
+<h1 id="adr-002-Идемпотентность-через-idempotency-key-заголовок--БД"><a class="header" href="#adr-002-Идемпотентность-через-idempotency-key-заголовок--БД">ADR-002: Идемпотентность через Idempotency-Key (заголовок + БД)</a></h1>
+<h2 id="Статус-1"><a class="header" href="#Статус-1">Статус</a></h2>
+<p><strong>Принято</strong></p>
+<h2 id="Контекст-1"><a class="header" href="#Контекст-1">Контекст</a></h2>
+<p>При создании платежа школа может случайно отправить два одинаковых запроса (сетевой ретрай, дубль от виджета, баг). Повторное списание — недопустимо. PayLect должен гарантировать, что каждый платёж создаётся ровно один раз.</p>
+<h2 id="Решение-1"><a class="header" href="#Решение-1">Решение</a></h2>
+<p>Внедрить <strong>Idempotency-Key</strong> механизм:</p>
+<ul>
+<li>Клиент передаёт заголовок <code>Idempotency-Key: &lt;UUID&gt;</code> при POST <code>/api/v1/payments</code>.</li>
+<li>Система проверяет наличие ключа в таблице <code>idempotency_keys</code>.</li>
+<li>Если ключ существует → возвращаем ранее созданный платёж (HTTP 200 или 409).</li>
+<li>Если ключа нет → создаём платёж, сохраняем ключ со ссылкой на <code>payment_id</code>.</li>
+<li>TTL ключа — <strong>30 дней</strong> (стандарт Stripe).</li>
+</ul>
+<p>Дополнительно: UNIQUE constraint на <code>order_id</code> в пределах одной школы (на случай, если школа не передаёт Idempotency-Key).</p>
+<h2 id="Последствия-trade-offs-1"><a class="header" href="#Последствия-trade-offs-1">Последствия (Trade-offs)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>✅ Плюсы</th><th>❌ Минусы</th></tr></thead><tbody>
+<tr><td>Полная защита от дублей платежей</td><td>Дополнительное хранилище (таблица + индексы)</td></tr>
+<tr><td>Прозрачно для школы (просто передать UUID)</td><td>Рост таблицы → нужна очистка старых ключей</td></tr>
+<tr><td>Повторный запрос возвращает тот же результат (идемпотентность)</td><td>30 дней хранения → ~1 млн ключей на 100k платежей/мес</td></tr>
+</tbody></table>
+</div>
+<h2 id="Альтернативы-1"><a class="header" href="#Альтернативы-1">Альтернативы</a></h2>
+<ul>
+<li><strong>Только UNIQUE на order_id</strong> — дешевле, но требует, чтобы школа сама гарантировала уникальность. Не защищает от повторного запроса с тем же <code>order_id</code>.</li>
+<li><strong>Использование Redis только для Idempotency</strong> — быстрее, но ключи потеряются при рестарте. БД + Redis в тандеме сложнее.</li>
+</ul>
+<h2 id="Решение-оставлено-в-силе-потому-что-1"><a class="header" href="#Решение-оставлено-в-силе-потому-что-1">Решение оставлено в силе, потому что:</a></h2>
+<p>Платежи — критическая доменная логика. Лучше переплатить за хранение и индекс, чем допустить двойное списание.</p>
+<hr />
+<h1 id="adr-003-cqrs-для-разделения-команд-платежи-и-запросов-аналитика"><a class="header" href="#adr-003-cqrs-для-разделения-команд-платежи-и-запросов-аналитика">ADR-003: CQRS для разделения команд (платежи) и запросов (аналитика)</a></h1>
+<h2 id="Статус-2"><a class="header" href="#Статус-2">Статус</a></h2>
+<p><strong>Принято</strong></p>
+<h2 id="Контекст-2"><a class="header" href="#Контекст-2">Контекст</a></h2>
+<p>Владельцы школ требуют богатую аналитику (выручка по курсам, LTV, отток, MRR). Одновременно платёжный процесс требует высокой доступности и предсказуемой задержки (&lt;500 мс). Смешивание тяжёлых аналитических запросов с транзакционными записями в одной БД приводит к деградации производительности платежей. Прямые SQL-запросы на миллионах платежей становятся слишком медленными.</p>
+<h2 id="Решение-2"><a class="header" href="#Решение-2">Решение</a></h2>
+<p>Применить <strong>CQRS (Command Query Responsibility Segregation)</strong> без полного Event Sourcing (медиаторный CQRS):</p>
+<h3 id="command-side-запись"><a class="header" href="#command-side-запись">Command side (запись)</a></h3>
+<ul>
+<li><strong>PostgreSQL (мастер)</strong> — нормализованная схема.</li>
+<li>Только <code>INSERT/UPDATE</code> через Payment Core.</li>
+<li>Минимум индексов, только для уникальности и внешних ключей.</li>
+</ul>
+<h3 id="query-side-чтение"><a class="header" href="#query-side-чтение">Query side (чтение)</a></h3>
+<ul>
+<li><strong>Redis</strong> — горячие метрики (сегодня, неделя, месяц) с TTL.</li>
+<li><strong>PostgreSQL (реплика, агрегатные таблицы)</strong> — <code>course_daily_revenue</code>, <code>ltv_by_student</code>, <code>churn_monthly</code>.</li>
+<li><strong>Analytics Engine</strong> (фоновый сервис) слушает очередь событий и обновляет агрегаты асинхронно.</li>
+<li><strong>Dashboard API</strong> — читает из Redis (hot path) и из агрегатных таблиц (cold path).</li>
+</ul>
+<h2 id="Последствия-trade-offs-2"><a class="header" href="#Последствия-trade-offs-2">Последствия (Trade-offs)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>✅ Плюсы</th><th>❌ Минусы</th></tr></thead><tbody>
+<tr><td>Аналитика не тормозит приём платежей</td><td>Асинхронность → аналитика может отставать на 1–5 секунд (eventual consistency)</td></tr>
+<tr><td>Можно масштабировать query-реплики отдельно</td><td>Дополнительная инфраструктура (Redis, агрегатные таблицы, воркер)</td></tr>
+<tr><td>Горячие метрики из Redis за &lt;1 мс</td><td>Усложнение логики (два способа хранения)</td></tr>
+<tr><td>Естественное разделение ответственности сервисов</td><td>Риск рассинхрона между мастером и агрегатами</td></tr>
+</tbody></table>
+</div>
+<h2 id="Альтернативы-2"><a class="header" href="#Альтернативы-2">Альтернативы</a></h2>
+<ul>
+<li><strong>Обычная монолитная БД с индексами</strong> — просто, но при 1M+ платежей аналитика падает до минут.</li>
+<li><strong>Полный Event Sourcing (все события хранятся, снапшоты)</strong> — абсолютная трассируемость, но колоссальное усложнение, не нужно на старте.</li>
+<li><strong>OLAP-хранилище (ClickHouse)</strong> — мощно, но перебор для 10k школ. PostgreSQL агрегатов достаточно.</li>
+</ul>
+<h2 id="Решение-оставлено-в-силе-потому-что-2"><a class="header" href="#Решение-оставлено-в-силе-потому-что-2">Решение оставлено в силе, потому что:</a></h2>
+<p>Для целевых 10 000 школ и 1 млн платежей в день CQRS с агрегатными таблицами даёт оптимальный баланс между сложностью и производительностью.</p>
+<div style="break-before: page; page-break-before: always;"></div><h2 id="9-Интерфейсы"><a class="header" href="#9-Интерфейсы">9. Интерфейсы</a></h2>
 <hr />
 <h4 id="Контракт-1-Создание-платежа-от-wordpresstilda"><a class="header" href="#Контракт-1-Создание-платежа-от-wordpresstilda">Контракт №1: Создание платежа (от WordPress/Tilda)</a></h4>
 <div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
@@ -664,75 +758,64 @@
     "is_subscription": true
 }
 
-**Ответы (Responses):**
-
-| HTTP код | Ситуация | Тело ответа |
-|----------|----------|-------------|
-| 200 OK | Платёж создан | `{"payment_id": "uuid", "redirect_url": "https://tbank.ru/pay/xxx", "code": 200}` |
-| 400 Bad Request | Невалидные поля | `{"error": "field amount is required", "code": 400}` |
-| 401 Unauthorized | Неверная подпись | `{"error": "invalid signature", "code": 401}` |
-| 401 Unauthorized | Timestamp старше 5 минут | `{"error": "timestamp expired", "code": 401}` |
-| 409 Conflict | Idempotency-Key уже использован | `{"payment_id": "uuid", "status": "existing", "code": 409}` |
-| 429 Too Many Requests | Превышен rate limit (5 RPM) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
-| 500 Internal Error | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
-| 503 Service Unavailable | Т-Банк недоступен | `{"error": "bank service unavailable", "code": 503}` |
-
-**Версионирование:**
-
-- Текущая версия: `v1` (URL: `/api/v1/payment`)
-- При изменениях — новая версия: `/api/v2/payment`
-- Старая версия поддерживается минимум 6 месяцев
-
-**Ретраи для ошибок:**
-
-| HTTP код | Retry strategy |
-|----------|----------------|
-| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
-| 400, 401, 409 | Без ретрая (ошибка клиента) |
-
-# Контракт №2: Вебхук от Т-Банка
-
-## Параметры
-
-| Параметр | Значение |
-|----------|----------|
-| **Endpoint** | `POST /api/v1/webhook/tbank` |
-| **Версия** | v1 |
-| **Протокол** | HTTPS, синхронный |
-| **Аутентификация** | Проверка IP белого списка + подпись от Т-Банка |
-
----
-
-## Заголовки запроса
-
-| Заголовок | Тип | Обязательность | Описание |
-|-----------|------|----------------|-----------|
-| `X-TBank-Signature` | `string` | ✅ Да | Подпись вебхука от Т-Банка |
-| `Content-Type` | `string` | ✅ Да | `application/json` |
-
----
-
-## Тело запроса (Request Body)
-
-| Поле | Тип | Обязательность | Описание |
-|------|------|----------------|-----------|
-| `payment_id` | `string(36)` | ✅ Да | ID платежа в системе Т-Банка |
-| `order_id` | `string(36)` | ✅ Да | ID платежа в PayLect (соответствует `payment_id`) |
-| `status` | `enum` | ✅ Да | `succeeded` / `failed` / `pending` / `refunded` |
-| `amount` | `decimal(10,2)` | ✅ Да | Сумма списания |
-| `card_token` | `string` | ❌ Нет | Токен карты (для рекуррентных платежей) |
-| `error_code` | `string` | ❌ Нет | Код ошибки (при `status=failed`) |
-| `error_message` | `string` | ❌ Нет | Описание ошибки |
-| `timestamp` | `int64` | ✅ Да | Unix timestamp |
-
----
-
-## Примеры запросов
-
-### ✅ Успешный платёж
-
-```json
-{
+</code></pre>
+<p><strong>Ответы (Responses):</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Ситуация</th><th>Тело ответа</th></tr></thead><tbody>
+<tr><td>200 OK</td><td>Платёж создан</td><td><code>{"payment_id": "uuid", "redirect_url": "https://tbank.ru/pay/xxx", "code": 200}</code></td></tr>
+<tr><td>400 Bad Request</td><td>Невалидные поля</td><td><code>{"error": "field amount is required", "code": 400}</code></td></tr>
+<tr><td>401 Unauthorized</td><td>Неверная подпись</td><td><code>{"error": "invalid signature", "code": 401}</code></td></tr>
+<tr><td>401 Unauthorized</td><td>Timestamp старше 5 минут</td><td><code>{"error": "timestamp expired", "code": 401}</code></td></tr>
+<tr><td>409 Conflict</td><td>Idempotency-Key уже использован</td><td><code>{"payment_id": "uuid", "status": "existing", "code": 409}</code></td></tr>
+<tr><td>429 Too Many Requests</td><td>Превышен rate limit (5 RPM)</td><td><code>{"error": "rate limit exceeded", "retry_after": 60, "code": 429}</code></td></tr>
+<tr><td>500 Internal Error</td><td>Внутренняя ошибка сервера</td><td><code>{"error": "internal server error", "code": 500}</code></td></tr>
+<tr><td>503 Service Unavailable</td><td>Т-Банк недоступен</td><td><code>{"error": "bank service unavailable", "code": 503}</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Версионирование:</strong></p>
+<ul>
+<li>Текущая версия: <code>v1</code> (URL: <code>/api/v1/payment</code>)</li>
+<li>При изменениях — новая версия: <code>/api/v2/payment</code></li>
+<li>Старая версия поддерживается минимум 6 месяцев</li>
+</ul>
+<p><strong>Ретраи для ошибок:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Retry strategy</th></tr></thead><tbody>
+<tr><td>429, 500, 503</td><td>Повтор через 1, 2, 4, 8 секунд (exponential backoff)</td></tr>
+<tr><td>400, 401, 409</td><td>Без ретрая (ошибка клиента)</td></tr>
+</tbody></table>
+</div>
+<h1 id="Контракт-2-Вебхук-от-Т-Банка"><a class="header" href="#Контракт-2-Вебхук-от-Т-Банка">Контракт №2: Вебхук от Т-Банка</a></h1>
+<h2 id="Параметры"><a class="header" href="#Параметры">Параметры</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/webhook/tbank</code></td></tr>
+<tr><td><strong>Версия</strong></td><td>v1</td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTPS, синхронный</td></tr>
+<tr><td><strong>Аутентификация</strong></td><td>Проверка IP белого списка + подпись от Т-Банка</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Заголовки-запроса"><a class="header" href="#Заголовки-запроса">Заголовки запроса</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Заголовок</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>X-TBank-Signature</code></td><td><code>string</code></td><td>✅ Да</td><td>Подпись вебхука от Т-Банка</td></tr>
+<tr><td><code>Content-Type</code></td><td><code>string</code></td><td>✅ Да</td><td><code>application/json</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Тело-запроса-request-body"><a class="header" href="#Тело-запроса-request-body">Тело запроса (Request Body)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>payment_id</code></td><td><code>string(36)</code></td><td>✅ Да</td><td>ID платежа в системе Т-Банка</td></tr>
+<tr><td><code>order_id</code></td><td><code>string(36)</code></td><td>✅ Да</td><td>ID платежа в PayLect (соответствует <code>payment_id</code>)</td></tr>
+<tr><td><code>status</code></td><td><code>enum</code></td><td>✅ Да</td><td><code>succeeded</code> / <code>failed</code> / <code>pending</code> / <code>refunded</code></td></tr>
+<tr><td><code>amount</code></td><td><code>decimal(10,2)</code></td><td>✅ Да</td><td>Сумма списания</td></tr>
+<tr><td><code>card_token</code></td><td><code>string</code></td><td>❌ Нет</td><td>Токен карты (для рекуррентных платежей)</td></tr>
+<tr><td><code>error_code</code></td><td><code>string</code></td><td>❌ Нет</td><td>Код ошибки (при <code>status=failed</code>)</td></tr>
+<tr><td><code>error_message</code></td><td><code>string</code></td><td>❌ Нет</td><td>Описание ошибки</td></tr>
+<tr><td><code>timestamp</code></td><td><code>int64</code></td><td>✅ Да</td><td>Unix timestamp</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Примеры-запросов"><a class="header" href="#Примеры-запросов">Примеры запросов</a></h2>
+<h3 id="-Успешный-платёж"><a class="header" href="#-Успешный-платёж">✅ Успешный платёж</a></h3>
+<pre><code class="language-json">{
   "payment_id": "tbank_123456",
   "order_id": "550e8400-e29b-41d4-a716-446655440001",
   "status": "succeeded",
@@ -741,10 +824,9 @@
   "timestamp": 1700000000
 }
 
-### ❌ Отказ карты
-
-```json
-{
+</code></pre>
+<h3 id="-Отказ-карты"><a class="header" href="#-Отказ-карты">❌ Отказ карты</a></h3>
+<pre><code class="language-json">{
   "payment_id": "tbank_123457",
   "order_id": "550e8400-e29b-41d4-a716-446655440002",
   "status": "failed",
@@ -754,61 +836,54 @@
   "timestamp": 1700000000
 }
 
-## Ответы (Responses)
+</code></pre>
+<h2 id="Ответы-responses"><a class="header" href="#Ответы-responses">Ответы (Responses)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Ситуация</th><th>Тело ответа</th></tr></thead><tbody>
+<tr><td><strong>200 OK</strong></td><td>Вебхук успешно обработан</td><td><code>{"status": "ok", "code": 200}</code></td></tr>
+<tr><td><strong>500 Internal Error</strong></td><td>Ошибка обработки (банк повторит)</td><td><code>{"error": "processing failed", "code": 500}</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="Версионирование"><a class="header" href="#Версионирование">Версионирование</a></h2>
+<ul>
+<li>Текущая версия: <code>v1</code> (URL: <code>/api/v1/webhook/tbank</code>)</li>
+<li>При изменениях — новая версия: <code>/api/v2/webhook/tbank</code></li>
+<li>Старая версия поддерживается минимум 6 месяцев</li>
+</ul>
+<h2 id="Ретраи-для-ошибок"><a class="header" href="#Ретраи-для-ошибок">Ретраи для ошибок</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Retry strategy</th></tr></thead><tbody>
+<tr><td>429, 500, 503</td><td>Повтор через 1, 2, 4, 8 секунд (exponential backoff)</td></tr>
+<tr><td>400, 401, 409</td><td>Без ретрая (ошибка клиента)</td></tr>
+</tbody></table>
+</div>
+<h4 id="Контракт-3-Выгрузка-платежей-в-1С-и-для-внешних-отчётов"><a class="header" href="#Контракт-3-Выгрузка-платежей-в-1С-и-для-внешних-отчётов">Контракт №3: Выгрузка платежей в 1С (и для внешних отчётов)</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>Endpoint</strong></td><td><code>GET /api/v1/payments</code></td></tr>
+<tr><td><strong>Версия</strong></td><td>v1</td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTPS, синхронный</td></tr>
+<tr><td><strong>Аутентификация</strong></td><td>API-ключ (заголовок <code>X-API-Key</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Заголовки запроса:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Заголовок</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>X-API-Key</code></td><td>string</td><td>✅ Да</td><td>API-ключ школы (из личного кабинета PayLect)</td></tr>
+<tr><td><code>Content-Type</code></td><td>string</td><td>✅ Да</td><td><code>application/json</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Параметры запроса (Query parameters):</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Тип</th><th>Обязательность</th><th>Описание</th><th>Пример</th></tr></thead><tbody>
+<tr><td><code>from</code></td><td>date</td><td>✅ Да</td><td>Начало периода (YYYY-MM-DD)</td><td><code>2026-01-01</code></td></tr>
+<tr><td><code>to</code></td><td>date</td><td>✅ Да</td><td>Конец периода (YYYY-MM-DD)</td><td><code>2026-12-31</code></td></tr>
+<tr><td><code>status</code></td><td>string</td><td>❌ Нет</td><td>Фильтр по статусу (<code>succeeded</code> / <code>failed</code> / <code>refunded</code>)</td><td><code>succeeded</code></td></tr>
+<tr><td><code>limit</code></td><td>int</td><td>❌ Нет (default: 100, max: 1000)</td><td>Лимит записей</td><td><code>50</code></td></tr>
+<tr><td><code>offset</code></td><td>int</td><td>❌ Нет (default: 0)</td><td>Смещение для пагинации</td><td><code>100</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Пример запроса:</strong></p>
+<pre><code class="language-http">GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;limit=100&amp;offset=0
 
-| HTTP код | Ситуация | Тело ответа |
-|----------|----------|-------------|
-| **200 OK** | Вебхук успешно обработан | `{"status": "ok", "code": 200}` |
-| **500 Internal Error** | Ошибка обработки (банк повторит) | `{"error": "processing failed", "code": 500}` |
-
-## Версионирование
-
-- Текущая версия: `v1` (URL: `/api/v1/webhook/tbank`)
-- При изменениях — новая версия: `/api/v2/webhook/tbank`
-- Старая версия поддерживается минимум 6 месяцев
-
-## Ретраи для ошибок
-
-| HTTP код | Retry strategy |
-|----------|----------------|
-| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
-| 400, 401, 409 | Без ретрая (ошибка клиента) |
-
-#### Контракт №3: Выгрузка платежей в 1С (и для внешних отчётов)
-
-| Параметр | Значение |
-|----------|----------|
-| **Endpoint** | `GET /api/v1/payments` |
-| **Версия** | v1 |
-| **Протокол** | HTTPS, синхронный |
-| **Аутентификация** | API-ключ (заголовок `X-API-Key`) |
-
-**Заголовки запроса:**
-
-| Заголовок | Тип | Обязательность | Описание |
-|-----------|-----|----------------|----------|
-| `X-API-Key` | string | ✅ Да | API-ключ школы (из личного кабинета PayLect) |
-| `Content-Type` | string | ✅ Да | `application/json` |
-
-**Параметры запроса (Query parameters):**
-
-| Параметр | Тип | Обязательность | Описание | Пример |
-|----------|-----|----------------|----------|--------|
-| `from` | date | ✅ Да | Начало периода (YYYY-MM-DD) | `2026-01-01` |
-| `to` | date | ✅ Да | Конец периода (YYYY-MM-DD) | `2026-12-31` |
-| `status` | string | ❌ Нет | Фильтр по статусу (`succeeded` / `failed` / `refunded`) | `succeeded` |
-| `limit` | int | ❌ Нет (default: 100, max: 1000) | Лимит записей | `50` |
-| `offset` | int | ❌ Нет (default: 0) | Смещение для пагинации | `100` |
-
-**Пример запроса:**
-
-```http
-GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;limit=100&amp;offset=0
-
-## Пример ответа (200 OK)
-
-```json
-{
+</code></pre>
+<h2 id="Пример-ответа-200-ok"><a class="header" href="#Пример-ответа-200-ok">Пример ответа (200 OK)</a></h2>
+<pre><code class="language-json">{
   "total": 150,
   "offset": 0,
   "limit": 100,
@@ -830,30 +905,320 @@ GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;
   ]
 }
 
-## Ответы (Responses)
-
-| HTTP код | Ситуация | Тело ответа |
-|----------|----------|-------------|
-| **200 OK** | Успешно | `{"total": 150, "payments": [...]}` |
-| **400 Bad Request** | Неверный период (from &gt; to) | `{"error": "invalid date range", "code": 400}` |
-| **400 Bad Request** | Неверный статус | `{"error": "invalid status value", "code": 400}` |
-| **401 Unauthorized** | Неверный или отсутствующий API-ключ | `{"error": "invalid api key", "code": 401}` |
-| **429 Too Many Requests** | Превышен rate limit (10 запросов/мин на ключ) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
-| **500 Internal Error** | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
-
-## Версионирование
-
-- Текущая версия: `v1` (URL: `/api/v1/payments`)
-- При изменениях — новая версия: `/api/v2/payments`
-- Старая версия поддерживается минимум 6 месяцев
-
-## Ретраи для ошибок
-
-| HTTP код | Retry strategy |
-|----------|----------------|
-| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
-| 400, 401 | Без ретрая (ошибка клиента) |</code></pre>
-
+</code></pre>
+<h2 id="Ответы-responses-1"><a class="header" href="#Ответы-responses-1">Ответы (Responses)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Ситуация</th><th>Тело ответа</th></tr></thead><tbody>
+<tr><td><strong>200 OK</strong></td><td>Успешно</td><td><code>{"total": 150, "payments": [...]}</code></td></tr>
+<tr><td><strong>400 Bad Request</strong></td><td>Неверный период (from &gt; to)</td><td><code>{"error": "invalid date range", "code": 400}</code></td></tr>
+<tr><td><strong>400 Bad Request</strong></td><td>Неверный статус</td><td><code>{"error": "invalid status value", "code": 400}</code></td></tr>
+<tr><td><strong>401 Unauthorized</strong></td><td>Неверный или отсутствующий API-ключ</td><td><code>{"error": "invalid api key", "code": 401}</code></td></tr>
+<tr><td><strong>429 Too Many Requests</strong></td><td>Превышен rate limit (10 запросов/мин на ключ)</td><td><code>{"error": "rate limit exceeded", "retry_after": 60, "code": 429}</code></td></tr>
+<tr><td><strong>500 Internal Error</strong></td><td>Внутренняя ошибка сервера</td><td><code>{"error": "internal server error", "code": 500}</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="Версионирование-1"><a class="header" href="#Версионирование-1">Версионирование</a></h2>
+<ul>
+<li>Текущая версия: <code>v1</code> (URL: <code>/api/v1/payments</code>)</li>
+<li>При изменениях — новая версия: <code>/api/v2/payments</code></li>
+<li>Старая версия поддерживается минимум 6 месяцев</li>
+</ul>
+<h2 id="Ретраи-для-ошибок-1"><a class="header" href="#Ретраи-для-ошибок-1">Ретраи для ошибок</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Retry strategy</th></tr></thead><tbody>
+<tr><td>429, 500, 503</td><td>Повтор через 1, 2, 4, 8 секунд (exponential backoff)</td></tr>
+<tr><td>400, 401</td><td>Без ретрая (ошибка клиента)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="10-Реестр-рисков"><a class="header" href="#10-Реестр-рисков">10. Реестр рисков</a></h1>
+<h2 id="Риск-1-Отказ-банка-эквайера-Т-Банк-при-списании"><a class="header" href="#Риск-1-Отказ-банка-эквайера-Т-Банк-при-списании">Риск №1. Отказ банка-эквайера (Т-Банк) при списании</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Технический сбой в Т-Банке, DDoS, обрыв связи, плановые работы</td></tr>
+<tr><td><strong>Событие</strong></td><td>API Т-Банка возвращает 5xx или таймаут при запросе на списание</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Платёж не выполнен, студент не получает доступ, выручка потеряна, менеджер не уведомлён</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Средняя / Высокий (прямая потеря выручки)</td></tr>
+<tr><td><strong>Меры</strong></td><td>Таймауты 30 сек, ретраи 1/2/4 сек, очередь RabbitMQ, возврат 503 школе, алерт в мониторинг</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Низкий (при длительном отказе &gt;1 часа выручка теряется)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-2-Потеря-вебхука-при-недоступности-сайта-школы"><a class="header" href="#Риск-2-Потеря-вебхука-при-недоступности-сайта-школы">Риск №2. Потеря вебхука при недоступности сайта школы</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Сайт школы (WordPress/Tilda) временно недоступен, возвращает 5xx или таймаут</td></tr>
+<tr><td><strong>Событие</strong></td><td>PayLect не может доставить вебхук об успешном платеже</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Сайт не обновляет статус платежа, студент не видит подтверждения, возможен двойной доступ вручную</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Средняя / Средний (операционные накладки)</td></tr>
+<tr><td><strong>Меры</strong></td><td>Очередь вебхуков в RabbitMQ с ретраями 1/5/15/60 минут, dead-letter после 4 попыток, лог ошибок</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Низкий (при отказе &gt;2 часов менеджер обработает вручную)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-3-Сбой-аутентификации-через-hmac-из-за-рассинхрона-времени"><a class="header" href="#Риск-3-Сбой-аутентификации-через-hmac-из-за-рассинхрона-времени">Риск №3. Сбой аутентификации через HMAC из-за рассинхрона времени</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Часы на сервере школы или PayLect расходятся &gt;5 минут (NTP не настроен)</td></tr>
+<tr><td><strong>Событие</strong></td><td>API Gateway отклоняет запрос как просроченный (timestamp mismatch)</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Все платежи от школы блокируются, выручка падает, менеджеры не в курсе причины</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Низкая / Высокий (полная остановка приёма платежей)</td></tr>
+<tr><td><strong>Меры</strong></td><td>Мониторинг NTP на всех серверах, допустимый джиттер ±30 сек, алерт при отклонении &gt;3 сек, инструкция для тех. администратора школы по синхронизации времени</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Очень низкий</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-4-Утечка-secret-key-школы-компрометация-api-ключа"><a class="header" href="#Риск-4-Утечка-secret-key-школы-компрометация-api-ключа">Риск №4. Утечка Secret Key школы (компрометация API-ключа)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Ключ сохранён в публичном репозитории, передан по открытому каналу, украден у тех. администратора</td></tr>
+<tr><td><strong>Событие</strong></td><td>Злоумышленник формирует подписанные запросы от имени школы</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Создание фиктивных платежей, списание средств студентов, потеря репутации, финансовые претензии</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Низкая / Критический</td></tr>
+<tr><td><strong>Меры</strong></td><td>Генерация ключей только в личном кабинете, отображение ключа один раз, возможность отзыва/ротации, HTTPS только, аудит всех запросов, алерт на необычную активность</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Низкий (при ротации каждые 90 дней)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-5-Сбой-репликации-postgresql-и-потеря-аналитических-данных"><a class="header" href="#Риск-5-Сбой-репликации-postgresql-и-потеря-аналитических-данных">Риск №5. Сбой репликации PostgreSQL и потеря аналитических данных</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Отказ реплики, разрыв синхронизации, сбой WAL-логов</td></tr>
+<tr><td><strong>Событие</strong></td><td>Dashboard API и Analytics Engine читают устаревшие или неполные данные</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Владелец школы видит неверную выручку, LTV, отток → ошибочные бизнес-решения</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Средняя / Средний</td></tr>
+<tr><td><strong>Меры</strong></td><td>Мониторинг лага реплики (pg_stat_replication), автоматическое переключение на мастер при чтении, алерт при лаге &gt;5 мин, ежечасная сверка контрольных сумм</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Низкий (при полной потере реплики данные восстанавливаются из мастера)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-6-Переполнение-очереди-rabbitmq-при-пиковой-нагрузке"><a class="header" href="#Риск-6-Переполнение-очереди-rabbitmq-при-пиковой-нагрузке">Риск №6. Переполнение очереди RabbitMQ при пиковой нагрузке</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Резкий рост числа платежей (акция, запуск курса) &gt;1000 RPS</td></tr>
+<tr><td><strong>Событие</strong></td><td>Очередь растёт, сообщения начинают дропаться или уходят в DLQ</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Задержка обработки платежей, уведомлений, вебхуков → студенты не получают доступ вовремя</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Низкая / Средний</td></tr>
+<tr><td><strong>Меры</strong></td><td>Автомасштабирование воркеров (K8s HPA по длине очереди), мониторинг очереди, алерт при &gt;10k сообщений, предварительное нагрузочное тестирование</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Очень низкий (при превышении лимитов школы платят за приоритетную обработку)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-7-Сбой-leader-election-у-retry-scheduler-двойные-списания"><a class="header" href="#Риск-7-Сбой-leader-election-у-retry-scheduler-двойные-списания">Риск №7. Сбой leader election у Retry Scheduler (двойные списания)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Сетевой split-brain, сбой блокировки в PostgreSQL или K8s lease</td></tr>
+<tr><td><strong>Событие</strong></td><td>Два экземпляра Retry Scheduler одновременно запускают одно и то же повторное списание</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Со студента списывается сумма дважды → chargeback, жалобы, потеря доверия</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Низкая / Высокий</td></tr>
+<tr><td><strong>Меры</strong></td><td>Использование PostgreSQL advisory lock с TTL, идемпотентность по payment_id, проверка статуса перед списанием, аудит всех retry-операций</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Очень низкий</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-8-Недоступность-сервиса-уведомлений-ВК--СМС-провайдер"><a class="header" href="#Риск-8-Недоступность-сервиса-уведомлений-ВК--СМС-провайдер">Риск №8. Недоступность сервиса уведомлений (ВК / СМС-провайдер)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Блокировка API VK, сбой у СМС-провайдера, квота превышена</td></tr>
+<tr><td><strong>Событие</strong></td><td>Notification Dispatcher не может отправить сообщение</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Менеджер не узнаёт о покупке → задержка доступа студента → отток. Студент не получает напоминание о списании → неожиданный платёж</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Средняя / Средний</td></tr>
+<tr><td><strong>Меры</strong></td><td>Логирование ошибки, fallback на альтернативный канал (Telegram или email), ретраи с exponential backoff, алерт инженерам, дублирование в личном кабинете (список "неудачных уведомлений")</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Низкий (менеджер может зайти в личный кабинет и увидеть новые платежи вручную)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-9-Ошибка-в-интеграции-с-1С-дублирование-документов"><a class="header" href="#Риск-9-Ошибка-в-интеграции-с-1С-дублирование-документов">Риск №9. Ошибка в интеграции с 1С (дублирование документов)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Повторный запуск внешней обработки без проверки last_sync_id, сбой идемпотентности</td></tr>
+<tr><td><strong>Событие</strong></td><td>Один и тот же платёж выгружается в 1С несколько раз</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Бухгалтер видит задвоенные поступления, не сходится с выпиской банка, ошибки в отчётности</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Средняя / Средний</td></tr>
+<tr><td><strong>Меры</strong></td><td>Эндпоинт GET /api/v1/payments поддерживает параметр last_sync_id, обработка хранит последний успешный ID, проверка "уже проведён" в 1С, ручная сверка раз в месяц</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Низкий (при обучении бухгалтера)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Риск-10-Падение-redis-с-потерей-горячих-метрик"><a class="header" href="#Риск-10-Падение-redis-с-потерей-горячих-метрик">Риск №10. Падение Redis с потерей горячих метрик</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody>
+<tr><td><strong>Причина</strong></td><td>Сбой сервера Redis, не включена persistence (RDB/AOF)</td></tr>
+<tr><td><strong>Событие</strong></td><td>Все горячие метрики (выручка за сегодня/неделю, LTV) потеряны</td></tr>
+<tr><td><strong>Последствие</strong></td><td>Дашборд временно пуст, владелец не видит актуальную аналитику</td></tr>
+<tr><td><strong>Вероятность / Ущерб</strong></td><td>Низкая / Низкий</td></tr>
+<tr><td><strong>Меры</strong></td><td>Включена AOF с fsync everysec, автоматический перезапуск Redis, снимки RDB каждые 6 часов, восстановление метрик из агрегатных таблиц PostgreSQL при старте</td></tr>
+<tr><td><strong>Остаточный риск</strong></td><td>Очень низкий (простой дашборда до 5 минут)</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="11-verification--validation-vv"><a class="header" href="#11-verification--validation-vv">11. Verification &amp; Validation (V&amp;V)</a></h1>
+<h2 id="Матрица-трассируемости-requirement--метод-проверки--артефакткейс"><a class="header" href="#Матрица-трассируемости-requirement--метод-проверки--артефакткейс">Матрица трассируемости: requirement → метод проверки → артефакт/кейс</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>ID требования</th><th>Описание требования</th><th>Метод проверки</th><th>Артефакт / тест-кейс</th></tr></thead><tbody>
+<tr><td><strong>SR-01</strong></td><td>Уведомление менеджера о новой покупке в мессенджер</td><td>Инспекция + Демо</td><td>ТК-01. Уведомление менеджера о покупке</td></tr>
+<tr><td><strong>SR-02</strong></td><td>В уведомлении менеджеру: ФИО, телефон, курс, сумма</td><td>Инспекция</td><td>ТК-01 (проверка содержимого)</td></tr>
+<tr><td><strong>SR-03</strong></td><td>Retry-механизм при отказе карты</td><td>Тестирование</td><td>ТК-02. Автоматический retry при отказе</td></tr>
+<tr><td><strong>SR-04</strong></td><td>Напоминание студенту за 2-3 дня до списания</td><td>Тестирование</td><td>ТК-03. Напоминание о предстоящем списании</td></tr>
+<tr><td><strong>SR-05</strong></td><td>Интеграция с Битрикс24 (автосоздание сделки)</td><td>Тестирование</td><td>ТК-04. Создание сделки в Битрикс24</td></tr>
+<tr><td><strong>SR-06</strong></td><td>Выгрузка платежей в 1С одной кнопкой</td><td>Демо</td><td>ТК-05. Выгрузка платежей в 1С</td></tr>
+<tr><td><strong>SR-07</strong></td><td>Уведомление менеджера после 3 отказов</td><td>Тестирование</td><td>ТК-06. Уведомление о проблемном платеже</td></tr>
+<tr><td><strong>SR-08</strong></td><td>Подключение без программистов менее чем за 10 мин</td><td>Анализ + Инспекция</td><td>Документация: гайд по установке плагина/шаблона</td></tr>
+<tr><td><strong>SR-09</strong></td><td>Дашборд с аналитикой по курсам</td><td>Демо</td><td>ТК-07. Отображение дашборда и метрик</td></tr>
+<tr><td><strong>SR-10</strong></td><td>Данные карты не попадают в PayLect</td><td>Анализ + Инспекция</td><td>Архитектурное решение ADR-004 (редирект на страницу банка)</td></tr>
+<tr><td><strong>SYS-01</strong></td><td>Idempotency-Key: возврат 409 при повторе</td><td>Тестирование</td><td>ТК-08. Идемпотентность платежа</td></tr>
+<tr><td><strong>SYS-10</strong></td><td>Retry интервалы: 1ч, 24ч, 72ч</td><td>Тестирование</td><td>ТК-02 (часть теста)</td></tr>
+<tr><td><strong>SYS-15</strong></td><td>Уведомление менеджеру за &lt;10 секунд</td><td>Тестирование (нагрузочное)</td><td>ТК-09. Задержка уведомления</td></tr>
+<tr><td><strong>SYS-19</strong></td><td>PayLect не хранит PAN/CVV</td><td>Инспекция кода + Аудит</td><td>Проверка моделей БД, логов</td></tr>
+<tr><td><strong>SYS-21</strong></td><td>HMAC-SHA256 подпись запросов</td><td>Тестирование</td><td>ТК-10. Аутентификация по HMAC</td></tr>
+<tr><td><strong>SYS-23</strong></td><td>Rate limiting: 5 RPM с одного IP</td><td>Тестирование</td><td>ТК-11. Rate limiting</td></tr>
+<tr><td><strong>SYS-25</strong></td><td>Экспорт отчёта в CSV/JSON</td><td>Демо</td><td>ТК-12. Экспорт отчёта</td></tr>
+<tr><td><strong>NFR-01</strong></td><td>Шифрование TLS 1.2+, HSTS</td><td>Анализ + Инструментально</td><td>Проверка SSL-сертификата, заголовков</td></tr>
+<tr><td><strong>NFR-02</strong></td><td>Idempotency-Key срок хранения 30 дней</td><td>Тестирование</td><td>ТК-08 (часть теста)</td></tr>
+<tr><td><strong>NFR-05</strong></td><td>Время ответа API ≤500 мс</td><td>Тестирование (нагрузочное)</td><td>ТК-09 (часть теста)</td></tr>
+<tr><td><strong>NFR-06</strong></td><td>Health checks (/health, /ready)</td><td>Инспекция + Тестирование</td><td>Проверка эндпоинтов мониторинга</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Тест-кейсы"><a class="header" href="#Тест-кейсы">Тест-кейсы</a></h2>
+<h3 id="ТК-01-Уведомление-менеджера-о-новой-покупке"><a class="header" href="#ТК-01-Уведомление-менеджера-о-новой-покупке">ТК-01. Уведомление менеджера о новой покупке</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-001</td></tr>
+<tr><td><strong>Название</strong></td><td>Уведомление менеджера в ВК после успешной оплаты</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-01, SR-02, SYS-15, SYS-16</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Школа зарегистрирована в PayLect<br>2. В личном кабинете указан номер телефона менеджера в ВК<br>3. WordPress-виджет настроен и вставлен на страницу курса</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Студент открывает страницу курса<br>2. Нажимает «Оплатить»<br>3. Вводит ФИО и телефон<br>4. Вводит данные карты на странице Т-Банка<br>5. Подтверждает платёж</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Платёж успешно проведён<br>2. Студент получил подтверждение<br>3. Менеджер получил сообщение в ВК &lt; 10 секунд<br>4. В сообщении указаны: ФИО студента, телефон, название курса, сумма</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В личном кабинете PayLect появилась запись о платеже со статусом <code>succeeded</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый WordPress, тестовый аккаунт Т-Банка</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-02-Автоматический-retry-при-отказе-карты"><a class="header" href="#ТК-02-Автоматический-retry-при-отказе-карты">ТК-02. Автоматический retry при отказе карты</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-002</td></tr>
+<tr><td><strong>Название</strong></td><td>Retry-механизм при временном отказе карты</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-03, SYS-10, SYS-11, SYS-13</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Оформлена подписка на курс<br>2. У студента есть карта с лимитом, которого хватает только на 2-ю попытку<br>3. В настройках школы установлено 3 retry-попытки</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Наступает дата планового списания<br>2. Система пытается списать → отказ (недостаточно средств)<br>3. Ожидание 1 час → вторая попытка → отказ<br>4. Ожидание 24 часа → третья попытка → успех</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. После первого отказа система не отправляет уведомление менеджеру<br>2. После успешной попытки списание зафиксировано<br>3. Дальнейшие retry-попытки не выполняются</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В логах аудита зафиксированы все 3 попытки с status: <code>failed</code> → <code>failed</code> → <code>succeeded</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая среда PayLect с симулятором Т-Банка</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-03-Напоминание-студенту-о-предстоящем-списании"><a class="header" href="#ТК-03-Напоминание-студенту-о-предстоящем-списании">ТК-03. Напоминание студенту о предстоящем списании</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-003</td></tr>
+<tr><td><strong>Название</strong></td><td>Отправка напоминания за 3 дня до автоплатежа</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-04, SYS-17</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. У студента активна подписка с ежемесячным списанием 15-го числа<br>2. В профиле студента указан телефон для СМС</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Наступает 12-е число (за 3 дня до списания)<br>2. Retry Scheduler запускает задачу на отправку напоминания<br>3. Notification Dispatcher отправляет СМС</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Студент получил СМС с текстом: «Напоминаем, что 15-го числа с вашей карты будет списано X руб. за курс "Python для начинающих"»<br>2. В логах зафиксирована отправка</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>—</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая среда с моком СМС-провайдера</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-04-Создание-сделки-в-Битрикс24-после-оплаты"><a class="header" href="#ТК-04-Создание-сделки-в-Битрикс24-после-оплаты">ТК-04. Создание сделки в Битрикс24 после оплаты</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-004</td></tr>
+<tr><td><strong>Название</strong></td><td>Автоматическое создание сделки и задачи в Битрикс24</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-05, SYS-07</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Приложение PayLect установлено в Битрикс24<br>2. В личном кабинете PayLect настроена интеграция с Битрикс24</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Студент оплачивает курс через виджет на WordPress<br>2. PayLect получает вебхук от Т-Банка об успехе<br>3. PayLect отправляет вебхук в Битрикс24</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. В Битрикс24 создана новая сделка<br>2. В сделке указаны: ФИО студента, телефон, сумма, название курса<br>3. Создана задача менеджеру: «Открыть доступ к курсу [название] для студента [ФИО]»</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В личном кабинете PayLect в журнале вебхуков статус = <code>delivered</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый Битрикс24, тестовый аккаунт PayLect</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-05-Выгрузка-платежей-в-1С"><a class="header" href="#ТК-05-Выгрузка-платежей-в-1С">ТК-05. Выгрузка платежей в 1С</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-005</td></tr>
+<tr><td><strong>Название</strong></td><td>Экспорт платежей из PayLect во внешнюю обработку 1С</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-06, SYS-08, SYS-09</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. В 1С:Бухгалтерия установлена внешняя обработка PayLect.epf<br>2. В обработку введён валидный API-ключ<br>3. За период с 01.04.2026 по 30.04.2026 есть 3 успешных платежа</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Бухгалтер открывает обработку в 1С<br>2. Выбирает период: 01.04.2026 – 30.04.2026<br>3. Нажимает «Выгрузить платежи»</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Обработка отправляет GET /api/v1/payments?from=2026-04-01&amp;to=2026-04-30<br>2. Получен ответ с 3 платежами<br>3. В 1С созданы 3 документа «Поступление на расчётный счет»<br>4. Документы проведены без ошибок</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>При повторной выгрузке за тот же период дубли не создаются</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая 1С:Бухгалтерия 8.3, тестовый API-ключ</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-06-Уведомление-менеджера-после-3-отказов"><a class="header" href="#ТК-06-Уведомление-менеджера-после-3-отказов">ТК-06. Уведомление менеджера после 3 отказов</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-006</td></tr>
+<tr><td><strong>Название</strong></td><td>Отправка уведомления менеджеру после трёх неуспешных списаний</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-07, SYS-12</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. У студента активна подписка<br>2. На карте студента недостаточно средств<br>3. В настройках школы: 3 retry-попытки</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Попытка №1 (списание в плановую дату) → отказ<br>2. Попытка №2 (через 1 час) → отказ<br>3. Попытка №3 (через 24 часа) → отказ<br>4. Попытка №4 (через 72 часа) → отказ</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Уведомление менеджеру не отправлялось после первых 3 отказов<br>2. После 4-го отказа (3-я retry попытка) менеджер получил сообщение в ВК: «У студента [ФИО] 3 отказа по подписке на курс [название]. Свяжитесь со студентом для смены способа оплаты»</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>Подписка студента переведена в статус <code>payment_failed</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая среда PayLect, мок Т-Банка, возвращающий ошибку <code>insufficient_funds</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-07-Отображение-дашборда-с-аналитикой-по-курсам"><a class="header" href="#ТК-07-Отображение-дашборда-с-аналитикой-по-курсам">ТК-07. Отображение дашборда с аналитикой по курсам</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-007</td></tr>
+<tr><td><strong>Название</strong></td><td>Просмотр аналитики в личном кабинете PayLect</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SR-09, SYS-24</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. PayLect работает 3 месяца<br>2. Есть данные по 3 курсам школы<br>3. Владелец школы авторизован в личном кабинете</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Владелец открывает личный кабинет PayLect<br>2. Переходит на вкладку «Аналитика»<br>3. Выбирает курс «Python для начинающих»<br>4. Выбирает период «Последние 30 дней»</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>На дашборде отображаются метрики:<br>- Общая выручка за период<br>- Количество оплат<br>- LTV (средний чек × количество платежей на студента)<br>- Отток (доля студентов, прекративших оплату)<br>Все метрики загружаются &lt; 3 секунд</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>При переключении на другой курс метрики пересчитываются корректно</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовая БД с синтетическими данными за 3 месяца</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-08-Идемпотентность-платежа"><a class="header" href="#ТК-08-Идемпотентность-платежа">ТК-08. Идемпотентность платежа</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-008</td></tr>
+<tr><td><strong>Название</strong></td><td>Повторный запрос с одинаковым Idempotency-Key не создаёт дубль</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-01, SYS-02, NFR-02</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. PayLect API доступен<br>2. Сгенерирован уникальный Idempotency-Key = <code>uuid-123</code></td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Отправить POST /api/v1/payment с Idempotency-Key: uuid-123 → успех, payment_id = P1<br>2. Тут же отправить второй такой же запрос с Idempotency-Key: uuid-123</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Второй запрос вернул HTTP 409 Conflict<br>2. Тело ответа содержит payment_id = P1 (тот же, что в первом запросе)<br>3. В БД создан только один платёж (нет дубля)</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>Через 31 день ключ удаляется, новый запрос с тем же ключом создаст платёж</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый API PayLect</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-09-Задержка-уведомления-менеджера-производительность"><a class="header" href="#ТК-09-Задержка-уведомления-менеджера-производительность">ТК-09. Задержка уведомления менеджера (производительность)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-009</td></tr>
+<tr><td><strong>Название</strong></td><td>Время отправки уведомления менеджеру не превышает 10 секунд</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-15, NFR-05</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Система под нагрузкой 50 RPS<br>2. Мониторинг времени ответа включён</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Студент инициирует оплату (засечь время T0)<br>2. Провести успешный платёж<br>3. Засечь время получения уведомления менеджером T1</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>T1 - T0 ≤ 10 секунд для 95% платежей</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В логах зафиксирована метрика <code>notification_delivery_ms</code></td></tr>
+<tr><td><strong>Окружение</strong></td><td>Нагрузочный стенд с k6 или JMeter</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-10-Аутентификация-по-hmac-sha256"><a class="header" href="#ТК-10-Аутентификация-по-hmac-sha256">ТК-10. Аутентификация по HMAC-SHA256</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-010</td></tr>
+<tr><td><strong>Название</strong></td><td>API Gateway отклоняет запросы с неверной подписью</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-21, SYS-22</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Школа зарегистрирована, получены Public Key и Secret Key<br>2. На сервере школы время синхронизировано с NTP</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Сформировать запрос с корректной подписью → ожидаем 200<br>2. Сформировать запрос с произвольной подписью → ожидаем 401<br>3. Сформировать запрос с подписью от другой школы → ожидаем 401<br>4. Сформировать запрос с timestamp = текущее время - 6 минут → ожидаем 401</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>Только правильно подписанные запросы с актуальным timestamp проходят аутентификацию</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>В логах аудита зафиксированы все отклонённые запросы с причиной</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый API, скрипт на Python для генерации подписей</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-11-rate-limiting-ограничение-частоты-запросов"><a class="header" href="#ТК-11-rate-limiting-ограничение-частоты-запросов">ТК-11. Rate limiting (ограничение частоты запросов)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-011</td></tr>
+<tr><td><strong>Название</strong></td><td>Превышение лимита 5 запросов в минуту блокирует IP</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-23</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. API Gateway доступен<br>2. Тестовый IP-адрес 192.168.1.100</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Отправить 5 запросов POST /api/v1/payment с IP 192.168.1.100 за 50 секунд → все успешны (200)<br>2. Отправить 6-й запрос с того же IP</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>6-й запрос вернул HTTP 429 Too Many Requests<br>Тело ответа: <code>{"error": "rate limit exceeded", "retry_after": 60, "code": 429}</code></td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>Через 60 секунд запрос с того же IP снова принимается</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Тестовый API, нагрузочный скрипт</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ТК-12-Экспорт-отчёта-в-csvjson"><a class="header" href="#ТК-12-Экспорт-отчёта-в-csvjson">ТК-12. Экспорт отчёта в CSV/JSON</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>ID</strong></td><td>TC-012</td></tr>
+<tr><td><strong>Название</strong></td><td>Экспорт отчёта по платежам из личного кабинета</td></tr>
+<tr><td><strong>Связанные требования</strong></td><td>SYS-25</td></tr>
+<tr><td><strong>Предусловия</strong></td><td>1. Владелец школы авторизован в личном кабинете<br>2. За период 01.04.2026 – 30.04.2026 есть платежи</td></tr>
+<tr><td><strong>Шаги</strong></td><td>1. Перейти в раздел «Отчёты»<br>2. Выбрать период: 01.04.2026 – 30.04.2026<br>3. Выбрать формат: CSV<br>4. Нажать «Экспорт»<br>5. Повторить шаги 2–4 для формата JSON</td></tr>
+<tr><td><strong>Ожидаемый результат</strong></td><td>1. Файл CSV скачан, открывается в Excel, содержит заголовки и все платежи за период<br>2. Файл JSON скачан, содержит валидный JSON-массив с теми же данными<br>3. Время экспорта ≤ 5 секунд</td></tr>
+<tr><td><strong>Пост-условия</strong></td><td>—</td></tr>
+<tr><td><strong>Окружение</strong></td><td>Браузер, личный кабинет PayLect</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

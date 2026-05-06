@@ -176,7 +176,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h2 id="10-Интерфейсы"><a class="header" href="#10-Интерфейсы">10. Интерфейсы</a></h2>
+                        <h2 id="9-Интерфейсы"><a class="header" href="#9-Интерфейсы">9. Интерфейсы</a></h2>
 <hr />
 <h4 id="Контракт-1-Создание-платежа-от-wordpresstilda"><a class="header" href="#Контракт-1-Создание-платежа-от-wordpresstilda">Контракт №1: Создание платежа (от WordPress/Tilda)</a></h4>
 <div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
@@ -220,75 +220,64 @@
     "is_subscription": true
 }
 
-**Ответы (Responses):**
-
-| HTTP код | Ситуация | Тело ответа |
-|----------|----------|-------------|
-| 200 OK | Платёж создан | `{"payment_id": "uuid", "redirect_url": "https://tbank.ru/pay/xxx", "code": 200}` |
-| 400 Bad Request | Невалидные поля | `{"error": "field amount is required", "code": 400}` |
-| 401 Unauthorized | Неверная подпись | `{"error": "invalid signature", "code": 401}` |
-| 401 Unauthorized | Timestamp старше 5 минут | `{"error": "timestamp expired", "code": 401}` |
-| 409 Conflict | Idempotency-Key уже использован | `{"payment_id": "uuid", "status": "existing", "code": 409}` |
-| 429 Too Many Requests | Превышен rate limit (5 RPM) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
-| 500 Internal Error | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
-| 503 Service Unavailable | Т-Банк недоступен | `{"error": "bank service unavailable", "code": 503}` |
-
-**Версионирование:**
-
-- Текущая версия: `v1` (URL: `/api/v1/payment`)
-- При изменениях — новая версия: `/api/v2/payment`
-- Старая версия поддерживается минимум 6 месяцев
-
-**Ретраи для ошибок:**
-
-| HTTP код | Retry strategy |
-|----------|----------------|
-| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
-| 400, 401, 409 | Без ретрая (ошибка клиента) |
-
-# Контракт №2: Вебхук от Т-Банка
-
-## Параметры
-
-| Параметр | Значение |
-|----------|----------|
-| **Endpoint** | `POST /api/v1/webhook/tbank` |
-| **Версия** | v1 |
-| **Протокол** | HTTPS, синхронный |
-| **Аутентификация** | Проверка IP белого списка + подпись от Т-Банка |
-
----
-
-## Заголовки запроса
-
-| Заголовок | Тип | Обязательность | Описание |
-|-----------|------|----------------|-----------|
-| `X-TBank-Signature` | `string` | ✅ Да | Подпись вебхука от Т-Банка |
-| `Content-Type` | `string` | ✅ Да | `application/json` |
-
----
-
-## Тело запроса (Request Body)
-
-| Поле | Тип | Обязательность | Описание |
-|------|------|----------------|-----------|
-| `payment_id` | `string(36)` | ✅ Да | ID платежа в системе Т-Банка |
-| `order_id` | `string(36)` | ✅ Да | ID платежа в PayLect (соответствует `payment_id`) |
-| `status` | `enum` | ✅ Да | `succeeded` / `failed` / `pending` / `refunded` |
-| `amount` | `decimal(10,2)` | ✅ Да | Сумма списания |
-| `card_token` | `string` | ❌ Нет | Токен карты (для рекуррентных платежей) |
-| `error_code` | `string` | ❌ Нет | Код ошибки (при `status=failed`) |
-| `error_message` | `string` | ❌ Нет | Описание ошибки |
-| `timestamp` | `int64` | ✅ Да | Unix timestamp |
-
----
-
-## Примеры запросов
-
-### ✅ Успешный платёж
-
-```json
-{
+</code></pre>
+<p><strong>Ответы (Responses):</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Ситуация</th><th>Тело ответа</th></tr></thead><tbody>
+<tr><td>200 OK</td><td>Платёж создан</td><td><code>{"payment_id": "uuid", "redirect_url": "https://tbank.ru/pay/xxx", "code": 200}</code></td></tr>
+<tr><td>400 Bad Request</td><td>Невалидные поля</td><td><code>{"error": "field amount is required", "code": 400}</code></td></tr>
+<tr><td>401 Unauthorized</td><td>Неверная подпись</td><td><code>{"error": "invalid signature", "code": 401}</code></td></tr>
+<tr><td>401 Unauthorized</td><td>Timestamp старше 5 минут</td><td><code>{"error": "timestamp expired", "code": 401}</code></td></tr>
+<tr><td>409 Conflict</td><td>Idempotency-Key уже использован</td><td><code>{"payment_id": "uuid", "status": "existing", "code": 409}</code></td></tr>
+<tr><td>429 Too Many Requests</td><td>Превышен rate limit (5 RPM)</td><td><code>{"error": "rate limit exceeded", "retry_after": 60, "code": 429}</code></td></tr>
+<tr><td>500 Internal Error</td><td>Внутренняя ошибка сервера</td><td><code>{"error": "internal server error", "code": 500}</code></td></tr>
+<tr><td>503 Service Unavailable</td><td>Т-Банк недоступен</td><td><code>{"error": "bank service unavailable", "code": 503}</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Версионирование:</strong></p>
+<ul>
+<li>Текущая версия: <code>v1</code> (URL: <code>/api/v1/payment</code>)</li>
+<li>При изменениях — новая версия: <code>/api/v2/payment</code></li>
+<li>Старая версия поддерживается минимум 6 месяцев</li>
+</ul>
+<p><strong>Ретраи для ошибок:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Retry strategy</th></tr></thead><tbody>
+<tr><td>429, 500, 503</td><td>Повтор через 1, 2, 4, 8 секунд (exponential backoff)</td></tr>
+<tr><td>400, 401, 409</td><td>Без ретрая (ошибка клиента)</td></tr>
+</tbody></table>
+</div>
+<h1 id="Контракт-2-Вебхук-от-Т-Банка"><a class="header" href="#Контракт-2-Вебхук-от-Т-Банка">Контракт №2: Вебхук от Т-Банка</a></h1>
+<h2 id="Параметры"><a class="header" href="#Параметры">Параметры</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/webhook/tbank</code></td></tr>
+<tr><td><strong>Версия</strong></td><td>v1</td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTPS, синхронный</td></tr>
+<tr><td><strong>Аутентификация</strong></td><td>Проверка IP белого списка + подпись от Т-Банка</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Заголовки-запроса"><a class="header" href="#Заголовки-запроса">Заголовки запроса</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Заголовок</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>X-TBank-Signature</code></td><td><code>string</code></td><td>✅ Да</td><td>Подпись вебхука от Т-Банка</td></tr>
+<tr><td><code>Content-Type</code></td><td><code>string</code></td><td>✅ Да</td><td><code>application/json</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Тело-запроса-request-body"><a class="header" href="#Тело-запроса-request-body">Тело запроса (Request Body)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>payment_id</code></td><td><code>string(36)</code></td><td>✅ Да</td><td>ID платежа в системе Т-Банка</td></tr>
+<tr><td><code>order_id</code></td><td><code>string(36)</code></td><td>✅ Да</td><td>ID платежа в PayLect (соответствует <code>payment_id</code>)</td></tr>
+<tr><td><code>status</code></td><td><code>enum</code></td><td>✅ Да</td><td><code>succeeded</code> / <code>failed</code> / <code>pending</code> / <code>refunded</code></td></tr>
+<tr><td><code>amount</code></td><td><code>decimal(10,2)</code></td><td>✅ Да</td><td>Сумма списания</td></tr>
+<tr><td><code>card_token</code></td><td><code>string</code></td><td>❌ Нет</td><td>Токен карты (для рекуррентных платежей)</td></tr>
+<tr><td><code>error_code</code></td><td><code>string</code></td><td>❌ Нет</td><td>Код ошибки (при <code>status=failed</code>)</td></tr>
+<tr><td><code>error_message</code></td><td><code>string</code></td><td>❌ Нет</td><td>Описание ошибки</td></tr>
+<tr><td><code>timestamp</code></td><td><code>int64</code></td><td>✅ Да</td><td>Unix timestamp</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="Примеры-запросов"><a class="header" href="#Примеры-запросов">Примеры запросов</a></h2>
+<h3 id="-Успешный-платёж"><a class="header" href="#-Успешный-платёж">✅ Успешный платёж</a></h3>
+<pre><code class="language-json">{
   "payment_id": "tbank_123456",
   "order_id": "550e8400-e29b-41d4-a716-446655440001",
   "status": "succeeded",
@@ -297,10 +286,9 @@
   "timestamp": 1700000000
 }
 
-### ❌ Отказ карты
-
-```json
-{
+</code></pre>
+<h3 id="-Отказ-карты"><a class="header" href="#-Отказ-карты">❌ Отказ карты</a></h3>
+<pre><code class="language-json">{
   "payment_id": "tbank_123457",
   "order_id": "550e8400-e29b-41d4-a716-446655440002",
   "status": "failed",
@@ -310,61 +298,54 @@
   "timestamp": 1700000000
 }
 
-## Ответы (Responses)
+</code></pre>
+<h2 id="Ответы-responses"><a class="header" href="#Ответы-responses">Ответы (Responses)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Ситуация</th><th>Тело ответа</th></tr></thead><tbody>
+<tr><td><strong>200 OK</strong></td><td>Вебхук успешно обработан</td><td><code>{"status": "ok", "code": 200}</code></td></tr>
+<tr><td><strong>500 Internal Error</strong></td><td>Ошибка обработки (банк повторит)</td><td><code>{"error": "processing failed", "code": 500}</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="Версионирование"><a class="header" href="#Версионирование">Версионирование</a></h2>
+<ul>
+<li>Текущая версия: <code>v1</code> (URL: <code>/api/v1/webhook/tbank</code>)</li>
+<li>При изменениях — новая версия: <code>/api/v2/webhook/tbank</code></li>
+<li>Старая версия поддерживается минимум 6 месяцев</li>
+</ul>
+<h2 id="Ретраи-для-ошибок"><a class="header" href="#Ретраи-для-ошибок">Ретраи для ошибок</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Retry strategy</th></tr></thead><tbody>
+<tr><td>429, 500, 503</td><td>Повтор через 1, 2, 4, 8 секунд (exponential backoff)</td></tr>
+<tr><td>400, 401, 409</td><td>Без ретрая (ошибка клиента)</td></tr>
+</tbody></table>
+</div>
+<h4 id="Контракт-3-Выгрузка-платежей-в-1С-и-для-внешних-отчётов"><a class="header" href="#Контракт-3-Выгрузка-платежей-в-1С-и-для-внешних-отчётов">Контракт №3: Выгрузка платежей в 1С (и для внешних отчётов)</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>Endpoint</strong></td><td><code>GET /api/v1/payments</code></td></tr>
+<tr><td><strong>Версия</strong></td><td>v1</td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTPS, синхронный</td></tr>
+<tr><td><strong>Аутентификация</strong></td><td>API-ключ (заголовок <code>X-API-Key</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Заголовки запроса:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Заголовок</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>X-API-Key</code></td><td>string</td><td>✅ Да</td><td>API-ключ школы (из личного кабинета PayLect)</td></tr>
+<tr><td><code>Content-Type</code></td><td>string</td><td>✅ Да</td><td><code>application/json</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Параметры запроса (Query parameters):</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Тип</th><th>Обязательность</th><th>Описание</th><th>Пример</th></tr></thead><tbody>
+<tr><td><code>from</code></td><td>date</td><td>✅ Да</td><td>Начало периода (YYYY-MM-DD)</td><td><code>2026-01-01</code></td></tr>
+<tr><td><code>to</code></td><td>date</td><td>✅ Да</td><td>Конец периода (YYYY-MM-DD)</td><td><code>2026-12-31</code></td></tr>
+<tr><td><code>status</code></td><td>string</td><td>❌ Нет</td><td>Фильтр по статусу (<code>succeeded</code> / <code>failed</code> / <code>refunded</code>)</td><td><code>succeeded</code></td></tr>
+<tr><td><code>limit</code></td><td>int</td><td>❌ Нет (default: 100, max: 1000)</td><td>Лимит записей</td><td><code>50</code></td></tr>
+<tr><td><code>offset</code></td><td>int</td><td>❌ Нет (default: 0)</td><td>Смещение для пагинации</td><td><code>100</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Пример запроса:</strong></p>
+<pre><code class="language-http">GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;limit=100&amp;offset=0
 
-| HTTP код | Ситуация | Тело ответа |
-|----------|----------|-------------|
-| **200 OK** | Вебхук успешно обработан | `{"status": "ok", "code": 200}` |
-| **500 Internal Error** | Ошибка обработки (банк повторит) | `{"error": "processing failed", "code": 500}` |
-
-## Версионирование
-
-- Текущая версия: `v1` (URL: `/api/v1/webhook/tbank`)
-- При изменениях — новая версия: `/api/v2/webhook/tbank`
-- Старая версия поддерживается минимум 6 месяцев
-
-## Ретраи для ошибок
-
-| HTTP код | Retry strategy |
-|----------|----------------|
-| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
-| 400, 401, 409 | Без ретрая (ошибка клиента) |
-
-#### Контракт №3: Выгрузка платежей в 1С (и для внешних отчётов)
-
-| Параметр | Значение |
-|----------|----------|
-| **Endpoint** | `GET /api/v1/payments` |
-| **Версия** | v1 |
-| **Протокол** | HTTPS, синхронный |
-| **Аутентификация** | API-ключ (заголовок `X-API-Key`) |
-
-**Заголовки запроса:**
-
-| Заголовок | Тип | Обязательность | Описание |
-|-----------|-----|----------------|----------|
-| `X-API-Key` | string | ✅ Да | API-ключ школы (из личного кабинета PayLect) |
-| `Content-Type` | string | ✅ Да | `application/json` |
-
-**Параметры запроса (Query parameters):**
-
-| Параметр | Тип | Обязательность | Описание | Пример |
-|----------|-----|----------------|----------|--------|
-| `from` | date | ✅ Да | Начало периода (YYYY-MM-DD) | `2026-01-01` |
-| `to` | date | ✅ Да | Конец периода (YYYY-MM-DD) | `2026-12-31` |
-| `status` | string | ❌ Нет | Фильтр по статусу (`succeeded` / `failed` / `refunded`) | `succeeded` |
-| `limit` | int | ❌ Нет (default: 100, max: 1000) | Лимит записей | `50` |
-| `offset` | int | ❌ Нет (default: 0) | Смещение для пагинации | `100` |
-
-**Пример запроса:**
-
-```http
-GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;limit=100&amp;offset=0
-
-## Пример ответа (200 OK)
-
-```json
-{
+</code></pre>
+<h2 id="Пример-ответа-200-ok"><a class="header" href="#Пример-ответа-200-ok">Пример ответа (200 OK)</a></h2>
+<pre><code class="language-json">{
   "total": 150,
   "offset": 0,
   "limit": 100,
@@ -386,38 +367,40 @@ GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;
   ]
 }
 
-## Ответы (Responses)
-
-| HTTP код | Ситуация | Тело ответа |
-|----------|----------|-------------|
-| **200 OK** | Успешно | `{"total": 150, "payments": [...]}` |
-| **400 Bad Request** | Неверный период (from &gt; to) | `{"error": "invalid date range", "code": 400}` |
-| **400 Bad Request** | Неверный статус | `{"error": "invalid status value", "code": 400}` |
-| **401 Unauthorized** | Неверный или отсутствующий API-ключ | `{"error": "invalid api key", "code": 401}` |
-| **429 Too Many Requests** | Превышен rate limit (10 запросов/мин на ключ) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
-| **500 Internal Error** | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
-
-## Версионирование
-
-- Текущая версия: `v1` (URL: `/api/v1/payments`)
-- При изменениях — новая версия: `/api/v2/payments`
-- Старая версия поддерживается минимум 6 месяцев
-
-## Ретраи для ошибок
-
-| HTTP код | Retry strategy |
-|----------|----------------|
-| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
-| 400, 401 | Без ретрая (ошибка клиента) |</code></pre>
-
+</code></pre>
+<h2 id="Ответы-responses-1"><a class="header" href="#Ответы-responses-1">Ответы (Responses)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Ситуация</th><th>Тело ответа</th></tr></thead><tbody>
+<tr><td><strong>200 OK</strong></td><td>Успешно</td><td><code>{"total": 150, "payments": [...]}</code></td></tr>
+<tr><td><strong>400 Bad Request</strong></td><td>Неверный период (from &gt; to)</td><td><code>{"error": "invalid date range", "code": 400}</code></td></tr>
+<tr><td><strong>400 Bad Request</strong></td><td>Неверный статус</td><td><code>{"error": "invalid status value", "code": 400}</code></td></tr>
+<tr><td><strong>401 Unauthorized</strong></td><td>Неверный или отсутствующий API-ключ</td><td><code>{"error": "invalid api key", "code": 401}</code></td></tr>
+<tr><td><strong>429 Too Many Requests</strong></td><td>Превышен rate limit (10 запросов/мин на ключ)</td><td><code>{"error": "rate limit exceeded", "retry_after": 60, "code": 429}</code></td></tr>
+<tr><td><strong>500 Internal Error</strong></td><td>Внутренняя ошибка сервера</td><td><code>{"error": "internal server error", "code": 500}</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="Версионирование-1"><a class="header" href="#Версионирование-1">Версионирование</a></h2>
+<ul>
+<li>Текущая версия: <code>v1</code> (URL: <code>/api/v1/payments</code>)</li>
+<li>При изменениях — новая версия: <code>/api/v2/payments</code></li>
+<li>Старая версия поддерживается минимум 6 месяцев</li>
+</ul>
+<h2 id="Ретраи-для-ошибок-1"><a class="header" href="#Ретраи-для-ошибок-1">Ретраи для ошибок</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>HTTP код</th><th>Retry strategy</th></tr></thead><tbody>
+<tr><td>429, 500, 503</td><td>Повтор через 1, 2, 4, 8 секунд (exponential backoff)</td></tr>
+<tr><td>400, 401</td><td>Без ретрая (ошибка клиента)</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="ADR.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="adr.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
+                            <a rel="next prefetch" href="risks.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -425,10 +408,13 @@ GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="ADR.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="adr.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
+                    <a rel="next prefetch" href="risks.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

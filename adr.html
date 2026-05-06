@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ADR - system-engineering-playbook</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="src/_assets/custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">system-engineering-playbook</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h3 id="82-adr"><a class="header" href="#82-adr">8.2. ADR</a></h3>
+<h1 id="adr-001-Использование-событийно-ориентированной-архитектуры-event-driven-с-очередью-сообщений"><a class="header" href="#adr-001-Использование-событийно-ориентированной-архитектуры-event-driven-с-очередью-сообщений">ADR-001: Использование событийно-ориентированной архитектуры (Event-Driven) с очередью сообщений</a></h1>
+<h2 id="Статус"><a class="header" href="#Статус">Статус</a></h2>
+<p><strong>Принято</strong></p>
+<h2 id="Контекст"><a class="header" href="#Контекст">Контекст</a></h2>
+<p>PayLect должен обрабатывать платежи, уведомления, вебхуки и аналитику. При пиковых нагрузках (запуск курса, акция) прямые синхронные вызовы могут привести к таймаутам, потере данных и недоступности API. Также требуется гарантированная доставка вебхуков при временной недоступности внешних систем (сайт школы, CRM, 1С).</p>
+<h2 id="Решение"><a class="header" href="#Решение">Решение</a></h2>
+<p>Использовать <strong>событийно-ориентированную архитектуру</strong> с <strong>RabbitMQ</strong> в качестве основной очереди сообщений. Все критически важные операции (создание платежа, обновление статуса, отправка уведомлений, вебхуки) проходят через очередь. Поток:</p>
+<ol>
+<li>API Gateway принимает запрос, проверяет идемпотентность и публикует событие <code>payment.created</code>.</li>
+<li>Payment Core (воркер) забирает событие, вызывает Т-Банк, публикует <code>payment.succeeded</code> / <code>payment.failed</code>.</li>
+<li>Notification Dispatcher и другие потребители реагируют на события.</li>
+</ol>
+<h2 id="Последствия-trade-offs"><a class="header" href="#Последствия-trade-offs">Последствия (Trade-offs)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>✅ Плюсы</th><th>❌ Минусы</th></tr></thead><tbody>
+<tr><td>Асинхронность → развязка сервисов, отказоустойчивость</td><td>Усложнение отладки (трассировка через очередь)</td></tr>
+<tr><td>Гарантированная доставка (persistent queues, retries)</td><td>Дополнительная инфраструктура (RabbitMQ/Kafka)</td></tr>
+<tr><td>Автомасштабирование воркеров по длине очереди</td><td>Возможна задержка обработки (milliseconds → seconds)</td></tr>
+<tr><td>Нет потери данных при падении потребителей</td><td>Лишний overhead для простых операций (например, health check)</td></tr>
+</tbody></table>
+</div>
+<h2 id="Альтернативы"><a class="header" href="#Альтернативы">Альтернативы</a></h2>
+<ul>
+<li><strong>Синхронная архитектура (REST только)</strong> — проще, но не гарантирует доставку вебхуков, падает при всплесках.</li>
+<li><strong>Kafka вместо RabbitMQ</strong> — больше пропускная способность, но сложнее в эксплуатации. Для текущих 100 RPS RabbitMQ достаточно.</li>
+</ul>
+<h2 id="Решение-оставлено-в-силе-потому-что"><a class="header" href="#Решение-оставлено-в-силе-потому-что">Решение оставлено в силе, потому что:</a></h2>
+<p>Надёжность доставки вебхуков и восстановление после сбоев важнее небольшого усложнения инфраструктуры.</p>
+<hr />
+<h1 id="adr-002-Идемпотентность-через-idempotency-key-заголовок--БД"><a class="header" href="#adr-002-Идемпотентность-через-idempotency-key-заголовок--БД">ADR-002: Идемпотентность через Idempotency-Key (заголовок + БД)</a></h1>
+<h2 id="Статус-1"><a class="header" href="#Статус-1">Статус</a></h2>
+<p><strong>Принято</strong></p>
+<h2 id="Контекст-1"><a class="header" href="#Контекст-1">Контекст</a></h2>
+<p>При создании платежа школа может случайно отправить два одинаковых запроса (сетевой ретрай, дубль от виджета, баг). Повторное списание — недопустимо. PayLect должен гарантировать, что каждый платёж создаётся ровно один раз.</p>
+<h2 id="Решение-1"><a class="header" href="#Решение-1">Решение</a></h2>
+<p>Внедрить <strong>Idempotency-Key</strong> механизм:</p>
+<ul>
+<li>Клиент передаёт заголовок <code>Idempotency-Key: &lt;UUID&gt;</code> при POST <code>/api/v1/payments</code>.</li>
+<li>Система проверяет наличие ключа в таблице <code>idempotency_keys</code>.</li>
+<li>Если ключ существует → возвращаем ранее созданный платёж (HTTP 200 или 409).</li>
+<li>Если ключа нет → создаём платёж, сохраняем ключ со ссылкой на <code>payment_id</code>.</li>
+<li>TTL ключа — <strong>30 дней</strong> (стандарт Stripe).</li>
+</ul>
+<p>Дополнительно: UNIQUE constraint на <code>order_id</code> в пределах одной школы (на случай, если школа не передаёт Idempotency-Key).</p>
+<h2 id="Последствия-trade-offs-1"><a class="header" href="#Последствия-trade-offs-1">Последствия (Trade-offs)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>✅ Плюсы</th><th>❌ Минусы</th></tr></thead><tbody>
+<tr><td>Полная защита от дублей платежей</td><td>Дополнительное хранилище (таблица + индексы)</td></tr>
+<tr><td>Прозрачно для школы (просто передать UUID)</td><td>Рост таблицы → нужна очистка старых ключей</td></tr>
+<tr><td>Повторный запрос возвращает тот же результат (идемпотентность)</td><td>30 дней хранения → ~1 млн ключей на 100k платежей/мес</td></tr>
+</tbody></table>
+</div>
+<h2 id="Альтернативы-1"><a class="header" href="#Альтернативы-1">Альтернативы</a></h2>
+<ul>
+<li><strong>Только UNIQUE на order_id</strong> — дешевле, но требует, чтобы школа сама гарантировала уникальность. Не защищает от повторного запроса с тем же <code>order_id</code>.</li>
+<li><strong>Использование Redis только для Idempotency</strong> — быстрее, но ключи потеряются при рестарте. БД + Redis в тандеме сложнее.</li>
+</ul>
+<h2 id="Решение-оставлено-в-силе-потому-что-1"><a class="header" href="#Решение-оставлено-в-силе-потому-что-1">Решение оставлено в силе, потому что:</a></h2>
+<p>Платежи — критическая доменная логика. Лучше переплатить за хранение и индекс, чем допустить двойное списание.</p>
+<hr />
+<h1 id="adr-003-cqrs-для-разделения-команд-платежи-и-запросов-аналитика"><a class="header" href="#adr-003-cqrs-для-разделения-команд-платежи-и-запросов-аналитика">ADR-003: CQRS для разделения команд (платежи) и запросов (аналитика)</a></h1>
+<h2 id="Статус-2"><a class="header" href="#Статус-2">Статус</a></h2>
+<p><strong>Принято</strong></p>
+<h2 id="Контекст-2"><a class="header" href="#Контекст-2">Контекст</a></h2>
+<p>Владельцы школ требуют богатую аналитику (выручка по курсам, LTV, отток, MRR). Одновременно платёжный процесс требует высокой доступности и предсказуемой задержки (&lt;500 мс). Смешивание тяжёлых аналитических запросов с транзакционными записями в одной БД приводит к деградации производительности платежей. Прямые SQL-запросы на миллионах платежей становятся слишком медленными.</p>
+<h2 id="Решение-2"><a class="header" href="#Решение-2">Решение</a></h2>
+<p>Применить <strong>CQRS (Command Query Responsibility Segregation)</strong> без полного Event Sourcing (медиаторный CQRS):</p>
+<h3 id="command-side-запись"><a class="header" href="#command-side-запись">Command side (запись)</a></h3>
+<ul>
+<li><strong>PostgreSQL (мастер)</strong> — нормализованная схема.</li>
+<li>Только <code>INSERT/UPDATE</code> через Payment Core.</li>
+<li>Минимум индексов, только для уникальности и внешних ключей.</li>
+</ul>
+<h3 id="query-side-чтение"><a class="header" href="#query-side-чтение">Query side (чтение)</a></h3>
+<ul>
+<li><strong>Redis</strong> — горячие метрики (сегодня, неделя, месяц) с TTL.</li>
+<li><strong>PostgreSQL (реплика, агрегатные таблицы)</strong> — <code>course_daily_revenue</code>, <code>ltv_by_student</code>, <code>churn_monthly</code>.</li>
+<li><strong>Analytics Engine</strong> (фоновый сервис) слушает очередь событий и обновляет агрегаты асинхронно.</li>
+<li><strong>Dashboard API</strong> — читает из Redis (hot path) и из агрегатных таблиц (cold path).</li>
+</ul>
+<h2 id="Последствия-trade-offs-2"><a class="header" href="#Последствия-trade-offs-2">Последствия (Trade-offs)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>✅ Плюсы</th><th>❌ Минусы</th></tr></thead><tbody>
+<tr><td>Аналитика не тормозит приём платежей</td><td>Асинхронность → аналитика может отставать на 1–5 секунд (eventual consistency)</td></tr>
+<tr><td>Можно масштабировать query-реплики отдельно</td><td>Дополнительная инфраструктура (Redis, агрегатные таблицы, воркер)</td></tr>
+<tr><td>Горячие метрики из Redis за &lt;1 мс</td><td>Усложнение логики (два способа хранения)</td></tr>
+<tr><td>Естественное разделение ответственности сервисов</td><td>Риск рассинхрона между мастером и агрегатами</td></tr>
+</tbody></table>
+</div>
+<h2 id="Альтернативы-2"><a class="header" href="#Альтернативы-2">Альтернативы</a></h2>
+<ul>
+<li><strong>Обычная монолитная БД с индексами</strong> — просто, но при 1M+ платежей аналитика падает до минут.</li>
+<li><strong>Полный Event Sourcing (все события хранятся, снапшоты)</strong> — абсолютная трассируемость, но колоссальное усложнение, не нужно на старте.</li>
+<li><strong>OLAP-хранилище (ClickHouse)</strong> — мощно, но перебор для 10k школ. PostgreSQL агрегатов достаточно.</li>
+</ul>
+<h2 id="Решение-оставлено-в-силе-потому-что-2"><a class="header" href="#Решение-оставлено-в-силе-потому-что-2">Решение оставлено в силе, потому что:</a></h2>
+<p>Для целевых 10 000 школ и 1 млн платежей в день CQRS с агрегатными таблицами даёт оптимальный баланс между сложностью и производительностью.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="containers.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="interfaces.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="containers.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="interfaces.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
