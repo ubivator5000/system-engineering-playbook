@@ -592,7 +592,268 @@
 <tr><td>Структура логов</td><td>JSON, все поля заполнены</td><td>Инспекция логов</td></tr>
 <tr><td>Доступность дашбордов</td><td>99.9%</td><td>Мониторинг</td></tr>
 </tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h2 id="8-Архитектура"><a class="header" href="#8-Архитектура">8. Архитектура</a></h2>
+<p><strong>Стиль архитектуры:</strong> Event-driven микросервисная архитектура с CQRS-подходом.</p>
+<p><strong>Ключевая идея:</strong> Платёжный оркестратор, который объединяет сайт школы, Т-Банк, Битрикс24 и 1С в единый контур.</p>
+<hr />
+<h3 id="Как-это-устроено"><a class="header" href="#Как-это-устроено">Как это устроено</a></h3>
+<p>Система состоит из десяти контейнеров, разделённых на три логических слоя.</p>
+<p><strong>Слой входа и безопасности.</strong> API Gateway выполняет аутентификацию школ через HMAC-подпись, ограничивает частоту запросов (5 RPM с одного IP) и проверяет идемпотентность — чтобы повторные запросы от школ не создавали дублирующиеся платежи.</p>
+<p><strong>Платёжное ядро (Command).</strong> Payment Core вызывает Т-Банк, обрабатывает вебхуки и управляет рекуррентными подписками. Все запросы проходят через RabbitMQ — это буферизирует платежи, защищает систему от всплесков и делает её отказоустойчивой: при падении внешних сервисов сообщения остаются в очереди. Retry Scheduler (единственный stateful сервис с leader election) отвечает за повторные списания при отказе карты — 1, 24 и 72 часа. Notification Dispatcher отправляет уведомления менеджерам в ВК и студентам через ВК или СМС.</p>
+<p><strong>Слой управления и аналитики (Query).</strong> School Cabinet — личный кабинет школы. Здесь генерируются API-ключи, настраиваются роли (CEO, менеджер, бухгалтер, тех. администратор) и параметры retry. Analytics Engine — фоновый сервис, который слушает очередь и обновляет данные: горячие метрики (выручка за сегодня, неделю, месяц) пишет в Redis, а дневные агрегаты — в PostgreSQL. Dashboard API — лёгкий HTTP-сервис, который по запросу School Cabinet отдаёт метрики: горячие — из Redis за доли миллисекунды, исторические (квартал, год) — из агрегатных таблиц PostgreSQL.</p>
+<p><strong>Хранилища.</strong> PostgreSQL — основное хранилище данных. В нём лежат платежи, подписки, школы, API-ключи, идемпотентность, аудит-логи с SHA256-цепочкой и агрегатные таблицы (выручка по дням, по месяцам, LTV по студентам, отток). Redis — горячий кэш для текущих метрик, сессий пользователей, API-ключей и счётчиков rate limiting.</p>
+<p><strong>Внешние артефакты</strong> устанавливаются у школ. WordPress Plugin встраивает виджет оплаты через шорткод. Tilda Template добавляет PayLect в список платёжных систем Tilda. Bitrix24 App создаёт сделки и задачи при успешных платежах. 1С выгружает платежи через эндпоинт.</p>
+<div style="break-before: page; page-break-before: always;"></div><h3 id="81-Контейнеры-c4-level-2"><a class="header" href="#81-Контейнеры-c4-level-2">8.1. Контейнеры (C4 Level 2)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>№</th><th>Контейнер</th><th>Тип</th><th>Обязанность</th><th>Что хранит</th><th>Технологии / Реализация</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>API Gateway</strong></td><td>Сервис</td><td>Аутентификация (HMAC), rate limiting (5 rpm/IP), приём запросов от WordPress/Tilda/1С, проверка Idempotency-Key</td><td>stateless</td><td>Go (net/http) + Redis (rate limiting counters)</td></tr>
+<tr><td>2</td><td><strong>Payment Core</strong></td><td>Сервис</td><td>Ядро платежей: вызов Т-Банка, рекуррентные списания, обработка вебхуков, parent–child связь (подписки)</td><td>stateless</td><td>Go + PostgreSQL (транзакции)</td></tr>
+<tr><td>3</td><td><strong>Payment Queue</strong></td><td>Очередь</td><td>Буфер для входящих запросов на оплату, защита от всплесков, dead-letter, at least once</td><td>persistent (сообщения)</td><td>RabbitMQ (persistent queues) / Apache Kafka</td></tr>
+<tr><td>4</td><td><strong>Retry Scheduler</strong></td><td>Сервис</td><td>Повторные списания (1ч/24ч/72ч), напоминания за 3 дня до списания, отмена retry при успехе</td><td>stateful (таблица scheduled_jobs)</td><td>Go + leader election (PostgreSQL advisory lock / K8s lease)</td></tr>
+<tr><td>5</td><td><strong>School Cabinet</strong></td><td>Сервис</td><td>Личный кабинет школы:<br>• Регистрация школы<br>• Генерация API-ключей (Public/Secret)<br>• Ролевая модель (CEO/менеджер/бухгалтер/админ)<br>• Настройки retry (0–5)<br>• Статусы интеграций<br>• Отображение дашбордов (читает из Dashboard API)<br>• Просмотр списка курсов, студентов, платежей (читает из PostgreSQL)</td><td>stateless (сессии в Redis)</td><td>Go / Python (Django/FastAPI) + JWT + PostgreSQL + Dashboard API</td></tr>
+<tr><td>6</td><td><strong>Analytics Engine</strong></td><td>Сервис</td><td>Сбор событий из очереди, расчёт агрегатов:<br>• Горячие метрики (today/week) → Redis<br>• Дневные агрегаты → PostgreSQL<br>• LTV / отток / MRR → пересчёт раз в час/день</td><td>stateless</td><td>Go + Python (pandas)</td></tr>
+<tr><td>7</td><td><strong>Dashboard API</strong></td><td>Сервис</td><td>Отдача метрик в School Cabinet:<br>• Горячие (today/week/month) → из Redis (&lt;1 мс)<br>• Исторические (квартал/год/3 года) → из PostgreSQL (10–50 мс)<br>• Экспорт CSV/JSON</td><td>stateless</td><td>Go + Redis + PostgreSQL</td></tr>
+<tr><td>8</td><td><strong>Notification Dispatcher</strong></td><td>Сервис</td><td>Отправка уведомлений: менеджеру о покупке (ВК), студенту о напоминании (ВК/СМС), менеджеру о 3 отказах, fallback</td><td>stateless</td><td>Go + API VK + API СМС + RabbitMQ</td></tr>
+<tr><td>9</td><td><strong>PostgreSQL</strong></td><td>База данных</td><td>Транзакционные данные:<br>• Платежи, подписки, школы, API-ключи<br>• Idempotency-Key (30 дней)<br>• Аудит-логи (append only, SHA256)<br><br>Агрегатные таблицы:<br>• course_daily_revenue<br>• course_monthly_revenue<br>• ltv_by_student, churn_monthly</td><td>stateful (диск)</td><td>PostgreSQL 15+ + реплика</td></tr>
+<tr><td>10</td><td><strong>Redis</strong></td><td>Кэш / In-memory БД</td><td>Горячие метрики (TTL: today=24h, week=7d, month=30d):<br>• Выручка по курсам и школам<br>• LTV по курсам<br>• Количество активных подписок<br><br>Инфраструктура:<br>• Сессии School Cabinet (TTL 24h)<br>• Кэш API-ключей (TTL 5 мин)<br>• Rate limiting counters (TTL 1 мин)</td><td>stateful (RAM + disk snapshot)</td><td>Redis 7+ + persistence (RDB/AOF) + sentinel</td></tr>
+</tbody></table>
 </div>
+<hr />
+<h3 id="82-Схема-контейнеров"><a class="header" href="#82-Схема-контейнеров">8.2. Схема контейнеров</a></h3>
+<iframe class="drawio-viewer" src="https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=diagram&url=https://raw.githubusercontent.com/ubivator5000/system-engineering-playbook/main/src/diagrams/C2.drawio"></iframe><div style="break-before: page; page-break-before: always;"></div><h1 id="adr"><a class="header" href="#adr">ADR</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h2 id="10-Интерфейсы"><a class="header" href="#10-Интерфейсы">10. Интерфейсы</a></h2>
+<hr />
+<h4 id="Контракт-1-Создание-платежа-от-wordpresstilda"><a class="header" href="#Контракт-1-Создание-платежа-от-wordpresstilda">Контракт №1: Создание платежа (от WordPress/Tilda)</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/payment</code></td></tr>
+<tr><td><strong>Версия</strong></td><td>v1</td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTPS, синхронный</td></tr>
+<tr><td><strong>Аутентификация</strong></td><td>HMAC-SHA256 (заголовки: <code>X-Public-Key</code>, <code>X-Signature</code>, <code>X-Timestamp</code>)</td></tr>
+<tr><td><strong>Идемпотентность</strong></td><td>Заголовок <code>Idempotency-Key</code> (обязательный)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Заголовки запроса:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Заголовок</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>X-Public-Key</code></td><td>string</td><td>✅ Да</td><td>Публичный ключ школы</td></tr>
+<tr><td><code>X-Signature</code></td><td>string</td><td>✅ Да</td><td>HMAC-SHA256 подпись</td></tr>
+<tr><td><code>X-Timestamp</code></td><td>int64</td><td>✅ Да</td><td>Unix timestamp (отклонение &gt;5 мин → ошибка)</td></tr>
+<tr><td><code>Idempotency-Key</code></td><td>string</td><td>✅ Да</td><td>Уникальный ключ идемпотентности (макс 128 символов)</td></tr>
+<tr><td><code>Content-Type</code></td><td>string</td><td>✅ Да</td><td><code>application/json</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Тело запроса (Request Body):</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>amount</code></td><td>decimal(10,2)</td><td>✅ Да</td><td>Сумма платежа</td></tr>
+<tr><td><code>product_id</code></td><td>string(36)</td><td>✅ Да</td><td>ID курса (UUID)</td></tr>
+<tr><td><code>product_name</code></td><td>string(255)</td><td>✅ Да</td><td>Название курса</td></tr>
+<tr><td><code>student_name</code></td><td>string(100)</td><td>✅ Да</td><td>Имя студента</td></tr>
+<tr><td><code>student_surname</code></td><td>string(100)</td><td>✅ Да</td><td>Фамилия студента</td></tr>
+<tr><td><code>student_patronymic</code></td><td>string(100)</td><td>❌ Нет</td><td>Отчество</td></tr>
+<tr><td><code>student_phone</code></td><td>string(20)</td><td>✅ Да</td><td>Телефон (формат: +7XXXXXXXXXX)</td></tr>
+<tr><td><code>is_subscription</code></td><td>boolean</td><td>❌ Нет (default: false)</td><td>Рекуррентный платёж</td></tr>
+<tr><td><code>return_url</code></td><td>string(255)</td><td>❌ Нет</td><td>URL для редиректа после оплаты</td></tr>
+</tbody></table>
+</div>
+<p><strong>Пример запроса:</strong></p>
+<pre><code class="language-json">{
+    "amount": 5000.00,
+    "product_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_name": "Python для начинающих",
+    "student_name": "Иван",
+    "student_surname": "Иванов",
+    "student_phone": "+79161234567",
+    "is_subscription": true
+}
+
+**Ответы (Responses):**
+
+| HTTP код | Ситуация | Тело ответа |
+|----------|----------|-------------|
+| 200 OK | Платёж создан | `{"payment_id": "uuid", "redirect_url": "https://tbank.ru/pay/xxx", "code": 200}` |
+| 400 Bad Request | Невалидные поля | `{"error": "field amount is required", "code": 400}` |
+| 401 Unauthorized | Неверная подпись | `{"error": "invalid signature", "code": 401}` |
+| 401 Unauthorized | Timestamp старше 5 минут | `{"error": "timestamp expired", "code": 401}` |
+| 409 Conflict | Idempotency-Key уже использован | `{"payment_id": "uuid", "status": "existing", "code": 409}` |
+| 429 Too Many Requests | Превышен rate limit (5 RPM) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
+| 500 Internal Error | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
+| 503 Service Unavailable | Т-Банк недоступен | `{"error": "bank service unavailable", "code": 503}` |
+
+**Версионирование:**
+
+- Текущая версия: `v1` (URL: `/api/v1/payment`)
+- При изменениях — новая версия: `/api/v2/payment`
+- Старая версия поддерживается минимум 6 месяцев
+
+**Ретраи для ошибок:**
+
+| HTTP код | Retry strategy |
+|----------|----------------|
+| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
+| 400, 401, 409 | Без ретрая (ошибка клиента) |
+
+# Контракт №2: Вебхук от Т-Банка
+
+## Параметры
+
+| Параметр | Значение |
+|----------|----------|
+| **Endpoint** | `POST /api/v1/webhook/tbank` |
+| **Версия** | v1 |
+| **Протокол** | HTTPS, синхронный |
+| **Аутентификация** | Проверка IP белого списка + подпись от Т-Банка |
+
+---
+
+## Заголовки запроса
+
+| Заголовок | Тип | Обязательность | Описание |
+|-----------|------|----------------|-----------|
+| `X-TBank-Signature` | `string` | ✅ Да | Подпись вебхука от Т-Банка |
+| `Content-Type` | `string` | ✅ Да | `application/json` |
+
+---
+
+## Тело запроса (Request Body)
+
+| Поле | Тип | Обязательность | Описание |
+|------|------|----------------|-----------|
+| `payment_id` | `string(36)` | ✅ Да | ID платежа в системе Т-Банка |
+| `order_id` | `string(36)` | ✅ Да | ID платежа в PayLect (соответствует `payment_id`) |
+| `status` | `enum` | ✅ Да | `succeeded` / `failed` / `pending` / `refunded` |
+| `amount` | `decimal(10,2)` | ✅ Да | Сумма списания |
+| `card_token` | `string` | ❌ Нет | Токен карты (для рекуррентных платежей) |
+| `error_code` | `string` | ❌ Нет | Код ошибки (при `status=failed`) |
+| `error_message` | `string` | ❌ Нет | Описание ошибки |
+| `timestamp` | `int64` | ✅ Да | Unix timestamp |
+
+---
+
+## Примеры запросов
+
+### ✅ Успешный платёж
+
+```json
+{
+  "payment_id": "tbank_123456",
+  "order_id": "550e8400-e29b-41d4-a716-446655440001",
+  "status": "succeeded",
+  "amount": 5000.00,
+  "card_token": "tok_abcdef123456",
+  "timestamp": 1700000000
+}
+
+### ❌ Отказ карты
+
+```json
+{
+  "payment_id": "tbank_123457",
+  "order_id": "550e8400-e29b-41d4-a716-446655440002",
+  "status": "failed",
+  "amount": 5000.00,
+  "error_code": "insufficient_funds",
+  "error_message": "Недостаточно средств на карте",
+  "timestamp": 1700000000
+}
+
+## Ответы (Responses)
+
+| HTTP код | Ситуация | Тело ответа |
+|----------|----------|-------------|
+| **200 OK** | Вебхук успешно обработан | `{"status": "ok", "code": 200}` |
+| **500 Internal Error** | Ошибка обработки (банк повторит) | `{"error": "processing failed", "code": 500}` |
+
+## Версионирование
+
+- Текущая версия: `v1` (URL: `/api/v1/webhook/tbank`)
+- При изменениях — новая версия: `/api/v2/webhook/tbank`
+- Старая версия поддерживается минимум 6 месяцев
+
+## Ретраи для ошибок
+
+| HTTP код | Retry strategy |
+|----------|----------------|
+| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
+| 400, 401, 409 | Без ретрая (ошибка клиента) |
+
+#### Контракт №3: Выгрузка платежей в 1С (и для внешних отчётов)
+
+| Параметр | Значение |
+|----------|----------|
+| **Endpoint** | `GET /api/v1/payments` |
+| **Версия** | v1 |
+| **Протокол** | HTTPS, синхронный |
+| **Аутентификация** | API-ключ (заголовок `X-API-Key`) |
+
+**Заголовки запроса:**
+
+| Заголовок | Тип | Обязательность | Описание |
+|-----------|-----|----------------|----------|
+| `X-API-Key` | string | ✅ Да | API-ключ школы (из личного кабинета PayLect) |
+| `Content-Type` | string | ✅ Да | `application/json` |
+
+**Параметры запроса (Query parameters):**
+
+| Параметр | Тип | Обязательность | Описание | Пример |
+|----------|-----|----------------|----------|--------|
+| `from` | date | ✅ Да | Начало периода (YYYY-MM-DD) | `2026-01-01` |
+| `to` | date | ✅ Да | Конец периода (YYYY-MM-DD) | `2026-12-31` |
+| `status` | string | ❌ Нет | Фильтр по статусу (`succeeded` / `failed` / `refunded`) | `succeeded` |
+| `limit` | int | ❌ Нет (default: 100, max: 1000) | Лимит записей | `50` |
+| `offset` | int | ❌ Нет (default: 0) | Смещение для пагинации | `100` |
+
+**Пример запроса:**
+
+```http
+GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;limit=100&amp;offset=0
+
+## Пример ответа (200 OK)
+
+```json
+{
+  "total": 150,
+  "offset": 0,
+  "limit": 100,
+  "payments": [
+    {
+      "payment_id": "550e8400-e29b-41d4-a716-446655440001",
+      "date": "2026-05-06T10:30:00Z",
+      "amount": 5000.00,
+      "student_name": "Иван",
+      "student_surname": "Иванов",
+      "student_patronymic": null,
+      "student_phone": "+79161234567",
+      "course_id": "550e8400-e29b-41d4-a716-446655440000",
+      "course_name": "Python для начинающих",
+      "status": "succeeded",
+      "is_subscription": true,
+      "subscription_id": "550e8400-e29b-41d4-a716-446655440003"
+    }
+  ]
+}
+
+## Ответы (Responses)
+
+| HTTP код | Ситуация | Тело ответа |
+|----------|----------|-------------|
+| **200 OK** | Успешно | `{"total": 150, "payments": [...]}` |
+| **400 Bad Request** | Неверный период (from &gt; to) | `{"error": "invalid date range", "code": 400}` |
+| **400 Bad Request** | Неверный статус | `{"error": "invalid status value", "code": 400}` |
+| **401 Unauthorized** | Неверный или отсутствующий API-ключ | `{"error": "invalid api key", "code": 401}` |
+| **429 Too Many Requests** | Превышен rate limit (10 запросов/мин на ключ) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
+| **500 Internal Error** | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
+
+## Версионирование
+
+- Текущая версия: `v1` (URL: `/api/v1/payments`)
+- При изменениях — новая версия: `/api/v2/payments`
+- Старая версия поддерживается минимум 6 месяцев
+
+## Ретраи для ошибок
+
+| HTTP код | Retry strategy |
+|----------|----------------|
+| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
+| 400, 401 | Без ретрая (ошибка клиента) |</code></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

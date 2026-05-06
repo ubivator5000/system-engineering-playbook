@@ -1,0 +1,458 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Интерфейсы - system-engineering-playbook</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="src/_assets/custom.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">system-engineering-playbook</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="10-Интерфейсы"><a class="header" href="#10-Интерфейсы">10. Интерфейсы</a></h2>
+<hr />
+<h4 id="Контракт-1-Создание-платежа-от-wordpresstilda"><a class="header" href="#Контракт-1-Создание-платежа-от-wordpresstilda">Контракт №1: Создание платежа (от WordPress/Tilda)</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>
+<tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/payment</code></td></tr>
+<tr><td><strong>Версия</strong></td><td>v1</td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTPS, синхронный</td></tr>
+<tr><td><strong>Аутентификация</strong></td><td>HMAC-SHA256 (заголовки: <code>X-Public-Key</code>, <code>X-Signature</code>, <code>X-Timestamp</code>)</td></tr>
+<tr><td><strong>Идемпотентность</strong></td><td>Заголовок <code>Idempotency-Key</code> (обязательный)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Заголовки запроса:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Заголовок</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>X-Public-Key</code></td><td>string</td><td>✅ Да</td><td>Публичный ключ школы</td></tr>
+<tr><td><code>X-Signature</code></td><td>string</td><td>✅ Да</td><td>HMAC-SHA256 подпись</td></tr>
+<tr><td><code>X-Timestamp</code></td><td>int64</td><td>✅ Да</td><td>Unix timestamp (отклонение &gt;5 мин → ошибка)</td></tr>
+<tr><td><code>Idempotency-Key</code></td><td>string</td><td>✅ Да</td><td>Уникальный ключ идемпотентности (макс 128 символов)</td></tr>
+<tr><td><code>Content-Type</code></td><td>string</td><td>✅ Да</td><td><code>application/json</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Тело запроса (Request Body):</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Поле</th><th>Тип</th><th>Обязательность</th><th>Описание</th></tr></thead><tbody>
+<tr><td><code>amount</code></td><td>decimal(10,2)</td><td>✅ Да</td><td>Сумма платежа</td></tr>
+<tr><td><code>product_id</code></td><td>string(36)</td><td>✅ Да</td><td>ID курса (UUID)</td></tr>
+<tr><td><code>product_name</code></td><td>string(255)</td><td>✅ Да</td><td>Название курса</td></tr>
+<tr><td><code>student_name</code></td><td>string(100)</td><td>✅ Да</td><td>Имя студента</td></tr>
+<tr><td><code>student_surname</code></td><td>string(100)</td><td>✅ Да</td><td>Фамилия студента</td></tr>
+<tr><td><code>student_patronymic</code></td><td>string(100)</td><td>❌ Нет</td><td>Отчество</td></tr>
+<tr><td><code>student_phone</code></td><td>string(20)</td><td>✅ Да</td><td>Телефон (формат: +7XXXXXXXXXX)</td></tr>
+<tr><td><code>is_subscription</code></td><td>boolean</td><td>❌ Нет (default: false)</td><td>Рекуррентный платёж</td></tr>
+<tr><td><code>return_url</code></td><td>string(255)</td><td>❌ Нет</td><td>URL для редиректа после оплаты</td></tr>
+</tbody></table>
+</div>
+<p><strong>Пример запроса:</strong></p>
+<pre><code class="language-json">{
+    "amount": 5000.00,
+    "product_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_name": "Python для начинающих",
+    "student_name": "Иван",
+    "student_surname": "Иванов",
+    "student_phone": "+79161234567",
+    "is_subscription": true
+}
+
+**Ответы (Responses):**
+
+| HTTP код | Ситуация | Тело ответа |
+|----------|----------|-------------|
+| 200 OK | Платёж создан | `{"payment_id": "uuid", "redirect_url": "https://tbank.ru/pay/xxx", "code": 200}` |
+| 400 Bad Request | Невалидные поля | `{"error": "field amount is required", "code": 400}` |
+| 401 Unauthorized | Неверная подпись | `{"error": "invalid signature", "code": 401}` |
+| 401 Unauthorized | Timestamp старше 5 минут | `{"error": "timestamp expired", "code": 401}` |
+| 409 Conflict | Idempotency-Key уже использован | `{"payment_id": "uuid", "status": "existing", "code": 409}` |
+| 429 Too Many Requests | Превышен rate limit (5 RPM) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
+| 500 Internal Error | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
+| 503 Service Unavailable | Т-Банк недоступен | `{"error": "bank service unavailable", "code": 503}` |
+
+**Версионирование:**
+
+- Текущая версия: `v1` (URL: `/api/v1/payment`)
+- При изменениях — новая версия: `/api/v2/payment`
+- Старая версия поддерживается минимум 6 месяцев
+
+**Ретраи для ошибок:**
+
+| HTTP код | Retry strategy |
+|----------|----------------|
+| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
+| 400, 401, 409 | Без ретрая (ошибка клиента) |
+
+# Контракт №2: Вебхук от Т-Банка
+
+## Параметры
+
+| Параметр | Значение |
+|----------|----------|
+| **Endpoint** | `POST /api/v1/webhook/tbank` |
+| **Версия** | v1 |
+| **Протокол** | HTTPS, синхронный |
+| **Аутентификация** | Проверка IP белого списка + подпись от Т-Банка |
+
+---
+
+## Заголовки запроса
+
+| Заголовок | Тип | Обязательность | Описание |
+|-----------|------|----------------|-----------|
+| `X-TBank-Signature` | `string` | ✅ Да | Подпись вебхука от Т-Банка |
+| `Content-Type` | `string` | ✅ Да | `application/json` |
+
+---
+
+## Тело запроса (Request Body)
+
+| Поле | Тип | Обязательность | Описание |
+|------|------|----------------|-----------|
+| `payment_id` | `string(36)` | ✅ Да | ID платежа в системе Т-Банка |
+| `order_id` | `string(36)` | ✅ Да | ID платежа в PayLect (соответствует `payment_id`) |
+| `status` | `enum` | ✅ Да | `succeeded` / `failed` / `pending` / `refunded` |
+| `amount` | `decimal(10,2)` | ✅ Да | Сумма списания |
+| `card_token` | `string` | ❌ Нет | Токен карты (для рекуррентных платежей) |
+| `error_code` | `string` | ❌ Нет | Код ошибки (при `status=failed`) |
+| `error_message` | `string` | ❌ Нет | Описание ошибки |
+| `timestamp` | `int64` | ✅ Да | Unix timestamp |
+
+---
+
+## Примеры запросов
+
+### ✅ Успешный платёж
+
+```json
+{
+  "payment_id": "tbank_123456",
+  "order_id": "550e8400-e29b-41d4-a716-446655440001",
+  "status": "succeeded",
+  "amount": 5000.00,
+  "card_token": "tok_abcdef123456",
+  "timestamp": 1700000000
+}
+
+### ❌ Отказ карты
+
+```json
+{
+  "payment_id": "tbank_123457",
+  "order_id": "550e8400-e29b-41d4-a716-446655440002",
+  "status": "failed",
+  "amount": 5000.00,
+  "error_code": "insufficient_funds",
+  "error_message": "Недостаточно средств на карте",
+  "timestamp": 1700000000
+}
+
+## Ответы (Responses)
+
+| HTTP код | Ситуация | Тело ответа |
+|----------|----------|-------------|
+| **200 OK** | Вебхук успешно обработан | `{"status": "ok", "code": 200}` |
+| **500 Internal Error** | Ошибка обработки (банк повторит) | `{"error": "processing failed", "code": 500}` |
+
+## Версионирование
+
+- Текущая версия: `v1` (URL: `/api/v1/webhook/tbank`)
+- При изменениях — новая версия: `/api/v2/webhook/tbank`
+- Старая версия поддерживается минимум 6 месяцев
+
+## Ретраи для ошибок
+
+| HTTP код | Retry strategy |
+|----------|----------------|
+| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
+| 400, 401, 409 | Без ретрая (ошибка клиента) |
+
+#### Контракт №3: Выгрузка платежей в 1С (и для внешних отчётов)
+
+| Параметр | Значение |
+|----------|----------|
+| **Endpoint** | `GET /api/v1/payments` |
+| **Версия** | v1 |
+| **Протокол** | HTTPS, синхронный |
+| **Аутентификация** | API-ключ (заголовок `X-API-Key`) |
+
+**Заголовки запроса:**
+
+| Заголовок | Тип | Обязательность | Описание |
+|-----------|-----|----------------|----------|
+| `X-API-Key` | string | ✅ Да | API-ключ школы (из личного кабинета PayLect) |
+| `Content-Type` | string | ✅ Да | `application/json` |
+
+**Параметры запроса (Query parameters):**
+
+| Параметр | Тип | Обязательность | Описание | Пример |
+|----------|-----|----------------|----------|--------|
+| `from` | date | ✅ Да | Начало периода (YYYY-MM-DD) | `2026-01-01` |
+| `to` | date | ✅ Да | Конец периода (YYYY-MM-DD) | `2026-12-31` |
+| `status` | string | ❌ Нет | Фильтр по статусу (`succeeded` / `failed` / `refunded`) | `succeeded` |
+| `limit` | int | ❌ Нет (default: 100, max: 1000) | Лимит записей | `50` |
+| `offset` | int | ❌ Нет (default: 0) | Смещение для пагинации | `100` |
+
+**Пример запроса:**
+
+```http
+GET /api/v1/payments?from=2026-01-01&amp;to=2026-12-31&amp;status=succeeded&amp;limit=100&amp;offset=0
+
+## Пример ответа (200 OK)
+
+```json
+{
+  "total": 150,
+  "offset": 0,
+  "limit": 100,
+  "payments": [
+    {
+      "payment_id": "550e8400-e29b-41d4-a716-446655440001",
+      "date": "2026-05-06T10:30:00Z",
+      "amount": 5000.00,
+      "student_name": "Иван",
+      "student_surname": "Иванов",
+      "student_patronymic": null,
+      "student_phone": "+79161234567",
+      "course_id": "550e8400-e29b-41d4-a716-446655440000",
+      "course_name": "Python для начинающих",
+      "status": "succeeded",
+      "is_subscription": true,
+      "subscription_id": "550e8400-e29b-41d4-a716-446655440003"
+    }
+  ]
+}
+
+## Ответы (Responses)
+
+| HTTP код | Ситуация | Тело ответа |
+|----------|----------|-------------|
+| **200 OK** | Успешно | `{"total": 150, "payments": [...]}` |
+| **400 Bad Request** | Неверный период (from &gt; to) | `{"error": "invalid date range", "code": 400}` |
+| **400 Bad Request** | Неверный статус | `{"error": "invalid status value", "code": 400}` |
+| **401 Unauthorized** | Неверный или отсутствующий API-ключ | `{"error": "invalid api key", "code": 401}` |
+| **429 Too Many Requests** | Превышен rate limit (10 запросов/мин на ключ) | `{"error": "rate limit exceeded", "retry_after": 60, "code": 429}` |
+| **500 Internal Error** | Внутренняя ошибка сервера | `{"error": "internal server error", "code": 500}` |
+
+## Версионирование
+
+- Текущая версия: `v1` (URL: `/api/v1/payments`)
+- При изменениях — новая версия: `/api/v2/payments`
+- Старая версия поддерживается минимум 6 месяцев
+
+## Ретраи для ошибок
+
+| HTTP код | Retry strategy |
+|----------|----------------|
+| 429, 500, 503 | Повтор через 1, 2, 4, 8 секунд (exponential backoff) |
+| 400, 401 | Без ретрая (ошибка клиента) |</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ADR.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ADR.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
