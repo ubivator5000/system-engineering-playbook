@@ -14,3 +14,7 @@
 - [Stakeholder requirements](./Stakeholder_requirements.md)
 - [System Requirements](./System_Requirements.md)
 - [NFR](./NFR.md)
+- [Архитектура](./architecture.md)
+    - [Контейнеры (C4 Level 2)](./containers.md)
+    - [ADR](./ADR.md)\
+- [Интерфейсы](./interfaces.md)

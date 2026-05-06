@@ -1,0 +1,200 @@
+<mxfile host="app.diagrams.net" agent="Draw.io">
+  <diagram name="PayLect C4 Container" id="paylect-container">
+    <mxGraphModel dx="2901" dy="1715" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="layer-security" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontStyle=1;fontSize=14;" value="Слой входа и безопасности" vertex="1">
+          <mxGeometry height="120" width="1320" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="payment-core" parent="layer-security" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#1B5E20;fontColor=#ffffff;fontStyle=1;" value="Payment Core&#xa;(Go + PostgreSQL)" vertex="1">
+          <mxGeometry height="55" width="150" x="840" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="label-amqp" parent="layer-security" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF9800;" value="AMQP" vertex="1">
+          <mxGeometry height="20" width="50" x="410" y="65" as="geometry" />
+        </mxCell>
+        <mxCell id="layer-core" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;fontStyle=1;fontSize=14;" value="Платёжное ядро" vertex="1">
+          <mxGeometry height="160" width="1320" x="40" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="notify-dispatcher" parent="layer-core" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#4CAF50;strokeColor=#1B5E20;fontColor=#ffffff;fontStyle=1;" value="Notification&#xa;Dispatcher" vertex="1">
+          <mxGeometry height="55" width="150" x="840" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="external-vk" parent="layer-core" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;fontStyle=1;" value="ВК / СМС" vertex="1">
+          <mxGeometry height="45" width="130" x="1110" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-notify-vk" edge="1" parent="layer-core" source="notify-dispatcher" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" target="external-vk" value="send">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="external-tbank" parent="layer-core" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;fontStyle=1;" value="Т-Банк (эквайринг)" vertex="1">
+          <mxGeometry height="45" width="130" x="1110" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="layer-analytics" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontStyle=1;fontSize=14;startSize=23;" value="Слой управления и аналитики + Хранилища" vertex="1">
+          <mxGeometry height="280" width="1320" x="40" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="dashboard-api" parent="layer-analytics" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#9C27B0;strokeColor=#4A148C;fontColor=#ffffff;fontStyle=1;" value="Dashboard API&#xa;(Go + Redis + PG)" vertex="1">
+          <mxGeometry height="55" width="150" x="500" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="school-cabinet" parent="layer-analytics" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#9C27B0;strokeColor=#4A148C;fontColor=#ffffff;fontStyle=1;" value="School Cabinet&#xa;(Go/Python + JWT)" vertex="1">
+          <mxGeometry height="55" width="150" x="210" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-cabinet-dashboard" edge="1" parent="layer-analytics" source="school-cabinet" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" target="dashboard-api" value="get metrics">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="external-bitrix" parent="layer-analytics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;fontStyle=1;" value="Битрикс24" vertex="1">
+          <mxGeometry height="45" width="130" x="1110" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="redis" parent="layer-analytics" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F44336;strokeColor=#B71C1C;fontColor=#ffffff;align=left;spacingLeft=8;" value="Redis 7+&lt;br&gt;• Горячие метрики&lt;br&gt;• Сессии, кэш, rate limit" vertex="1">
+          <mxGeometry height="70" width="190" x="850" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-dashboard-redis" edge="1" parent="layer-analytics" source="dashboard-api" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#F44336;" target="redis" value="read metrics">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1000" y="217" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="external-wp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;fontStyle=1;" value="WordPress / Tilda" vertex="1">
+          <mxGeometry height="45" width="130" x="50" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="external-1c" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;fontStyle=1;" value="1С:Бухгалтерия" vertex="1">
+          <mxGeometry height="45" width="130" x="50" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="api-gateway" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#2196F3;strokeColor=#0D47A1;fontColor=#ffffff;fontStyle=1;" value="API Gateway&#xa;(Go + Redis)" vertex="1">
+          <mxGeometry height="55" width="150" x="280" y="75" as="geometry" />
+        </mxCell>
+        <mxCell id="payment-queue" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FF9800;strokeColor=#E65100;fontColor=#ffffff;fontStyle=1;" value="Payment Queue&#xa;(RabbitMQ)" vertex="1">
+          <mxGeometry height="55" width="150" x="530" y="75" as="geometry" />
+        </mxCell>
+        <mxCell id="analytics-engine" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#9C27B0;strokeColor=#4A148C;fontColor=#ffffff;fontStyle=1;" value="Analytics Engine&#xa;(Go + Python)" vertex="1">
+          <mxGeometry height="55" width="150" x="790" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="postgresql" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#607D8B;strokeColor=#263238;fontColor=#ffffff;align=left;spacingLeft=8;" value="PostgreSQL 15+&#xa;(master + replica)&#xa;• Платежи, школы, ключи&#xa;• Агрегатные таблицы&#xa;• Аудит-логи" vertex="1">
+          <mxGeometry height="80" width="220" x="350" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-wp-api" edge="1" parent="1" source="external-wp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" target="api-gateway" value="REST API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-api-queue" edge="1" parent="1" source="api-gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#FF9800;dashed=1;" target="payment-queue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-queue-core" edge="1" parent="1" source="payment-queue" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" target="payment-core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-core-tbank" edge="1" parent="1" source="payment-core" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" target="external-tbank" value="API">
+          <mxGeometry relative="1" x="-0.4116" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1100" y="103" />
+              <mxPoint x="1100" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-core-notify" edge="1" parent="1" source="payment-core" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#FF9800;dashed=1;" target="notify-dispatcher" value="notify">
+          <mxGeometry relative="1" x="0.5714" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="930" y="150" />
+              <mxPoint x="930" y="150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-queue-analytics" edge="1" parent="1" source="payment-queue" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#FF9800;dashed=1;" target="analytics-engine" value="payment events">
+          <mxGeometry relative="1" x="-0.3952" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="605" y="140" />
+              <mxPoint x="850" y="140" />
+              <mxPoint x="850" y="410" />
+              <mxPoint x="810" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-analytics-pg" edge="1" parent="1" source="analytics-engine" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=light-dark(#000000,#728B97);" target="postgresql" value="write">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-analytics-redis" edge="1" parent="1" source="analytics-engine" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#F44336;entryX=-0.009;entryY=0.412;entryDx=0;entryDy=0;entryPerimeter=0;" target="redis" value="hot metrics">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="429" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-dashboard-pg" edge="1" parent="1" source="dashboard-api" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=light-dark(#000000,#728B97);" target="postgresql" value="read">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="615" y="515" />
+              <mxPoint x="500" y="515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-cabinet-pg" edge="1" parent="1" source="school-cabinet" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#607D8B;" target="postgresql" value="read">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-api-1c" edge="1" parent="1" source="api-gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#E65100;dashed=1;" target="external-1c" value="GET /api/v1/payments">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="355" y="20" />
+              <mxPoint x="-20" y="20" />
+              <mxPoint x="-20" y="553" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;fontStyle=1;" value="Описание" vertex="1">
+          <mxGeometry height="130" width="330" x="1030" y="-100" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-http" parent="legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" value="Синхронный (HTTP/gRPC)" vertex="1">
+          <mxGeometry height="20" width="200" x="90" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-async" parent="legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" value="Асинхронный (RabbitMQ)" vertex="1">
+          <mxGeometry height="20" width="200" x="90" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-db" parent="legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" value="Чтение / запись БД" vertex="1">
+          <mxGeometry height="20" width="200" x="90" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line-http" edge="1" parent="legend" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="10" y="39.56999999999999" as="sourcePoint" />
+            <mxPoint x="70" y="39.56999999999999" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-line-async" edge="1" parent="legend" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#FF9800;dashed=1;">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="10" y="64.57" as="sourcePoint" />
+            <mxPoint x="70" y="64.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-line-db" edge="1" parent="legend" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#607D8B;">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="10" y="89.57" as="sourcePoint" />
+            <mxPoint x="70" y="89.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pukNOMZQ8428V4jJAD0x-2" edge="1" parent="1" source="notify-dispatcher" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#FF9800;dashed=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.357;entryY=-0.044;entryDx=0;entryDy=0;entryPerimeter=0;" target="external-bitrix" value="payment events">
+          <mxGeometry relative="1" x="0.5225" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1070" y="311" />
+              <mxPoint x="1070" y="350" />
+              <mxPoint x="1196" y="350" />
+              <mxPoint x="1196" y="470" />
+            </Array>
+            <mxPoint x="850" y="310" as="sourcePoint" />
+            <mxPoint x="1055" y="670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pukNOMZQ8428V4jJAD0x-3" edge="1" parent="1" source="payment-core" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=light-dark(#000000,#728B97);entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0;exitDx=0;exitDy=0;" target="postgresql" value="write">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1340" y="75" />
+              <mxPoint x="1340" y="620" />
+              <mxPoint x="210" y="620" />
+              <mxPoint x="210" y="455" />
+            </Array>
+            <mxPoint x="1340" y="609" as="sourcePoint" />
+            <mxPoint x="930" y="546" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
