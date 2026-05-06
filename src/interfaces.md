@@ -1,4 +1,4 @@
-## 10. Интерфейсы
+## 9. Интерфейсы
 
 ---
 
@@ -48,6 +48,8 @@
     "student_phone": "+79161234567",
     "is_subscription": true
 }
+
+```
 
 **Ответы (Responses):**
 
@@ -126,6 +128,8 @@
   "timestamp": 1700000000
 }
 
+```
+
 ### ❌ Отказ карты
 
 ```json
@@ -138,6 +142,8 @@
   "error_message": "Недостаточно средств на карте",
   "timestamp": 1700000000
 }
+
+```
 
 ## Ответы (Responses)
 
@@ -190,6 +196,8 @@
 ```http
 GET /api/v1/payments?from=2026-01-01&to=2026-12-31&status=succeeded&limit=100&offset=0
 
+```
+
 ## Пример ответа (200 OK)
 
 ```json
@@ -214,6 +222,8 @@ GET /api/v1/payments?from=2026-01-01&to=2026-12-31&status=succeeded&limit=100&of
     }
   ]
 }
+
+```
 
 ## Ответы (Responses)
 

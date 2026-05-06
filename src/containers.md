@@ -15,6 +15,6 @@
 
 ---
 
-### 8.2. Схема контейнеров
+### Схема контейнеров
 
 @drawio{https://github.com/ubivator5000/system-engineering-playbook/blob/main/src/diagrams/C2.drawio}

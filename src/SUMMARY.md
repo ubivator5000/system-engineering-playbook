@@ -16,5 +16,7 @@
 - [NFR](./NFR.md)
 - [Архитектура](./architecture.md)
     - [Контейнеры (C4 Level 2)](./containers.md)
-    - [ADR](./ADR.md)\
+    - [ADR](./adr.md)\
 - [Интерфейсы](./interfaces.md)
+- [Риски](./risks.md)
+- [V&V](./vv.md)
