@@ -31,4 +31,4 @@
 
 Вся публикуемая документация сгенерирована и доступна в формате интерактивного сайта:
 
-🔗 **[Открыть онлайн-документацию PayLect](https://ubivator5000.github.io/system-engineering-playbook/)**
+🔗 **[Открыть онлайн-документацию PayLect](https://systemrk200.github.io/system-engineering-playbook/)**
